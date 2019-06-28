@@ -1,2 +1,3 @@
 # blockchain
-PrivateSky blockchain. Used for both live blockchains 9blockchain domains) and near-chains (CSBs as EDFS folders)
+PrivateSky embedavble blockchain database. 
+Blockchain module is used for blockchains (blockchain domains) and for near-chains storage (CSBs as EDFS folders)

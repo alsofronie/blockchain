@@ -1,0 +1,14 @@
+{
+ "cset": {
+  "k1": "v1",
+  "k2": "v2",
+  "k3": "v3"
+ },
+ "writeSetVersions": {
+  "k1": null,
+  "k2": null,
+  "k3": null
+ },
+ "vsd": "02ecac3b95656e23e46cf7685cdf7596270d3f6de5227cc447809f21b34e87e4",
+ "currentPulse": 1
+}

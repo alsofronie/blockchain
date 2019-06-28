@@ -1,2 +1,0 @@
-require('./domainSwarms');
-require('./agentsSwarm');

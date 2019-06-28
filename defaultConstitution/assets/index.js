@@ -5,7 +5,7 @@ module.exports = $$.library(function(){
     require("./Backup");
     require("./ACLScope");
     require("./Key");
-    require("./transactions");
+    require("../transactions/transactions");
     require("./FileReference");
     require("./EmbeddedFile");
     require('./CSBMeta');

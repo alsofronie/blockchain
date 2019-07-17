@@ -15,6 +15,8 @@ function Pulse(signer, currentPulseNumber, block, newTransactions, vsd, top, las
     this.last           = last;                 // a.k.a. lastPulseAchievedConsensus
 }
 
+
+/*
 function Transaction(currentPulse, swarm) {
     this.input      = swarm.input;
     this.output     = swarm.output;
@@ -28,16 +30,15 @@ function Transaction(currentPulse, swarm) {
     this.digest     = pskcrypto.hashValues(this);
 }
 
-
 exports.createTransaction = function (currentPulse, swarm) {
     return new Transaction(currentPulse, swarm);
-}
+}*/
 
 exports.createPulse = function (signer, currentPulseNumber, block, newTransactions, vsd, top, last) {
     return new Pulse(signer, currentPulseNumber, block, newTransactions, vsd, top, last);
 }
 
-exports.orderTransactions = function (pset) { //order in place the pset array
+exports.orderCRTransactions = function (pset) { //order in place the pset array
     var arr = [];
     for (var d in pset) {
         arr.push(pset[d]);

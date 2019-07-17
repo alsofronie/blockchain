@@ -1,6 +1,6 @@
 require("../../../../builds/devel/pskruntime");
 const pskDB = require("pskdb");
-const cutil = require("../../signsensus/lib/consUtil");
+const cutil = require("../../../signsensus/lib/consUtil");
 const assert = require('double-check').assert;
 
 const pds = pskDB.startDB("./storageFolder");

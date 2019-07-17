@@ -1,4 +1,4 @@
-const memoryPDS = require("./InMemoryPDS");
+const memoryPDS = require("../lib/InMemoryPDS");
 
 function PersistentPDS({getInitValues, persist}) {
 	this.memCache = memoryPDS.newPDS(this);

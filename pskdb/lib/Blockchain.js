@@ -1,4 +1,4 @@
-const consUtil = require('signsensus').consUtil;
+const consUtil = require('../../signsensus').consUtil;
 const beesHealer = require("swarmutils").beesHealer;
 
 function Blockchain(pds) {

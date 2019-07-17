@@ -1,7 +1,7 @@
 require('../../../../builds/devel/pskruntime');
 require('../../../../builds/devel/psknode');
 var pskDB = require('pskdb');
-const cutil = require('../../signsensus/lib/consUtil');
+const cutil = require('../../../signsensus/lib/consUtil');
 var assert = require('double-check').assert;
 
 var theGlobalBlockchain = pskDB.startDB('./testData'); // a.k.a. $$.blockchain

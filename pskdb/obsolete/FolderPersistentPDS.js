@@ -1,4 +1,4 @@
-var memoryPDS = require("./InMemoryPDS");
+var memoryPDS = require("../lib/InMemoryPDS");
 var fs = require("fs");
 var path = require("path");
 

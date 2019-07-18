@@ -6,15 +6,13 @@ function Blockchain(pds) {
 
     this.beginTransaction = function (transactionSwarm) {
         if (!transactionSwarm) {
-            throw new Error('Missing swarm');
+            $$.exception("Can't begin a transaction outside of a swarm");
         }
-
         swarm = transactionSwarm;
         return new Transaction(pds.getHandler());
     };
 
     this.commit = function (transaction) {
-
         const diff = pds.computeSwarmTransactionDiff(swarm, transaction.getHandler());
         const t = consUtil.createTransaction(0, diff);
         const set = {};
@@ -22,7 +20,6 @@ function Blockchain(pds) {
         pds.commit(set, 1);
     };
 }
-
 
 function Transaction(pdsHandler) {
     const ALIASES = '/aliases';
@@ -86,7 +83,7 @@ function Transaction(pdsHandler) {
             const assetAliases = this.getAliases();
 
             if (typeof assetAliases[alias] !== "undefined") {
-                $$.errorHandler.throwError(new Error(`Alias ${alias} for assets of type ${assetType} already exists`));
+                $$.exception(`Alias ${alias} for assets of type ${assetType} already exists`);
             }
 
             assetAliases[alias] = uid;

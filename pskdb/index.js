@@ -1,19 +1,19 @@
 const Blockchain = require('./lib/Blockchain');
 
 module.exports = {
-    startDB: function (storage, loadDefaultConstitution) {
+    startDB: function (worldStateCache, historyStorage, loadDefaultConstitution) {
         if(loadDefaultConstitution){
             require('../defaultConstitution/assets/index');
             require('../defaultConstitution/transactions/index');
         }
-        let pds = require('./lib/InMemoryPDS').newPDS(storage);
+        let pds = require('./lib/InMemoryPDS').newPDS(worldStateCache, historyStorage);
         return new Blockchain(pds);
     },
-    startDefaultDB: function (storage, loadDefaultConstitution) {
+    startDefaultDB: function (worldStateCache, historyStorage, loadDefaultConstitution) {
         if ($$.blockchain) {
-            throw new Error('$$.blockchain is already defined');
+            $$.exception('$$.blockchain is already defined. Throwing an exception,');
         }
-        $$.blockchain = this.startDB(storage, loadDefaultConstitution);
+        $$.blockchain = this.startDB(worldStateCache, historyStorage, loadDefaultConstitution);
         return $$.blockchain;
     }
 };

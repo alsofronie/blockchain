@@ -169,10 +169,10 @@ function Storage(parentStorage){
     }
 }
 
-function InMemoryPDS(permanentPersistence){
+function InMemoryPDS(worldStateCache, historyStorage){
 
     var mainStorage = new Storage(null);
-
+    var self = this;
 
     this.getHandler = function(){ // a way to work with PDS
         var tempStorage = new Storage(mainStorage);
@@ -192,24 +192,35 @@ function InMemoryPDS(permanentPersistence){
 
     }
 
-    this.commit = function(blockSet, currentPulse){
+    this.commit = function(block){
+        var blockSet = block.blockset;
+        var currentPulse = block.currentPulse;
         mainStorage.commit(blockSet);
-        if(permanentPersistence) {
-            permanentPersistence.persist(blockSet, mainStorage.getInternalValues(currentPulse, false), currentPulse);
-        }
+        var internalValues = mainStorage.getInternalValues(currentPulse, false);
+        worldStateCache.updateState(internalValues)
+        historyStorage.saveBlock( block, false);
     }
 
     this.getVSD = function (){
         return mainStorage.getVSD(false);
     }
 
-    this.initialise = function(savedInternalValues){
-        mainStorage.initialiseInternalValue(savedInternalValues);
+    this.initialise = function(){
+        worldStateCache.getState(function(err, valuesFromCache){
+            $$.autoThrow(err, "PDS dailed to load initial state");
+            if(valuesFromCache){
+                mainStorage.initialiseInternalValue(valuesFromCache);
+            }
+            historyStorage.observeNewBlocks(self.getVSD(), function(err, newBlock){
+                console.log("New block arrived", newBlock);
+                self.commit(newBlock);
+            })
+        });
     }
 
 }
 
 
-exports.newPDS = function(persistence){
-    return new InMemoryPDS(persistence);
+exports.newPDS = function(worldStateCache, historyStorage){
+    return new InMemoryPDS(worldStateCache, historyStorage);
 }

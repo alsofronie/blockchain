@@ -76,7 +76,7 @@ module.exports.createDomainInfo = function(json, updater){
 }
 
 
-
+/*
 var contract = $$.blockchain.lookup("contractType", uid);
 contract.doSomething();
 
@@ -87,7 +87,7 @@ $$.blockchain.save(contract, contract1, ...)
 
 
 $$.blockchain.currentAgent
-
+*/
 
 
 

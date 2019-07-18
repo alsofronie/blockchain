@@ -24,14 +24,14 @@ function CRTransaction(swarmType, command, input, output, currentPulse) {
 exports.createTransaction =
 
 module.exports = {
-    init:function(worldStateCache, historyStorage){
-        return require("./pskdb").startDB();
+    init:function(worldStateCache, historyStorage, loadDefaultConstitution){
+        return require("./pskdb").startDefaultDB(worldStateCache, historyStorage, loadDefaultConstitution);
     },
     createHistoryStorage:function(storageType,...args){
-        return require("./historyStorages").create(storageType,args);
+        return require("./historyStorages").createStorage(storageType,...args);
     },
     createWorldStateStorage:function(storageType,...args){
-        return require("./worldStateStorages").create(storageType,args);
+        return require("./worldStateCaches").createCache(storageType,...args);
     },
     createCRTransaction:function (swarmType, command, input, output, currentPulse) {
         return new CRTransaction(swarmType, command, input, output, currentPulse);

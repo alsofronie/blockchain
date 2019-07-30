@@ -1,5 +1,5 @@
 
-var cutil   = require("../../signsensus/lib/consUtil");
+var cutil   = require("../signsensus/lib/consUtil");
 var ssutil  = require("pskcrypto");
 
 
@@ -169,7 +169,7 @@ function Storage(parentStorage){
     }
 }
 
-function InMemoryPDS(worldStateCache, historyStorage){
+function PDS(worldStateCache, historyStorage, consensusAlgorithm){
 
     var mainStorage = new Storage(null);
     var self = this;
@@ -207,6 +207,7 @@ function InMemoryPDS(worldStateCache, historyStorage){
 
     this.initialise = function(){
         worldStateCache.getState(function(err, valuesFromCache){
+
             $$.autoThrow(err, "PDS dailed to load initial state");
             if(valuesFromCache){
                 mainStorage.initialiseInternalValue(valuesFromCache);
@@ -221,6 +222,6 @@ function InMemoryPDS(worldStateCache, historyStorage){
 }
 
 
-exports.newPDS = function(worldStateCache, historyStorage){
-    return new InMemoryPDS(worldStateCache, historyStorage);
+exports.newPDS = function(worldStateCache, historyStorage, algorithm){
+    return new PDS(worldStateCache, historyStorage, algorithm);
 }

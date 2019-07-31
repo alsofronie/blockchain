@@ -1,15 +1,23 @@
-function DirectCommit(){
-    this.commit = function(block,announce){
+function DirectCommitAlgoritm(){
+    this.commit = function(transaction){
+        $$.blockchain.commit(transaction);
+    }
+}
 
+
+function SignSensusAlgoritm(){
+    this.commit = function(transaction){
+        $$.blockchain.commit(transaction);
     }
 }
 
 module.exports = {
     createAlgorithm:function(name,...args){
-        if(storageType == "none"){
-            return new DirectCommit();
-        } else {
-            throw new Error("Unknown blockchain history storage with type " + storageType);
+        switch(name){
+            case "direct": return new DirectCommitAlgoritm();
+            case "SignSensus": return new  SignSensusAlgoritm(...args);
+            default:
+                $$.exception("Unknown consensu algortihm  " + name);
         }
     }
 }

@@ -2,28 +2,39 @@ const consUtil = require('../signsensus/index').consUtil;
 const beesHealer = require("swarmutils").beesHealer;
 
 function Blockchain(pds) {
-    let swarm = null;
 
     this.beginTransaction = function (transactionSwarm) {
+
         if (!transactionSwarm) {
             $$.exception("Can't begin a transaction outside of a swarm");
         }
         swarm = transactionSwarm;
-        return new Transaction(pds.getHandler());
+        return new Transaction(pds.getHandler(), transactionSwarm);
     };
 
     this.commit = function (transaction) {
-        const diff = pds.computeSwarmTransactionDiff(swarm, transaction.getHandler());
+        const diff = pds.computeSwarmTransactionDiff(transaction.getSwarm(), transaction.getHandler());
         const t = consUtil.createTransaction(0, diff);
         const set = {};
         set[t.digest] = t;
         pds.commit(set, 1);
     };
+
+    this.start = function(callback){
+        callback(null, pds);
+    }
 }
 
-function Transaction(pdsHandler) {
+function Transaction(pdsHandler, transactionSwarm) {
     const ALIASES = '/aliases';
 
+    this.getSwarm = function(){
+        return transactionSwarm;
+    };
+
+    this.getHandler = function () {
+        return pdsHandler;
+    };
 
     this.add = function (asset) {
         const swarmTypeName = asset.getMetadata('swarmTypeName');
@@ -40,7 +51,7 @@ function Transaction(pdsHandler) {
         pdsHandler.writeKey(swarmTypeName + '/' + swarmId, J(serializedSwarm));
     };
 
-    this.lookup = function (assetType, aid) { // alias sau id
+    this.lookup = function (assetType, aid) { // aid == alias or id
         let localUid = aid;
 
         if (hasAliases(assetType)) {
@@ -70,9 +81,7 @@ function Transaction(pdsHandler) {
         return assets;
     };
 
-    this.getHandler = function () {
-        return pdsHandler;
-    };
+
 
     function hasAliases(spaceName) {
         return !!pdsHandler.readKey(spaceName + ALIASES);

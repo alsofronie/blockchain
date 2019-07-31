@@ -6,7 +6,7 @@ module.exports = {
             require('../defaultConstitution/assets/index');
             require('../defaultConstitution/transactions/index');
         }
-        let pds = require('./InMemoryPDS').newPDS(worldStateCache, historyStorage, algorithm);
+        let pds = require('./PDS').newPDS(worldStateCache, historyStorage, algorithm);
         return new Blockchain(pds);
     },
     startDefaultDB: function (worldStateCache, historyStorage, algorithm, loadDefaultConstitution) {

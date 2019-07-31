@@ -6,12 +6,20 @@ function LocalWSCache(path){
     }
 }
 
+function MemoryCache(){
+
+    this.getState = function(callback){ //err, valuesFromCache
+
+    }
+}
+
 module.exports = {
     createCache:function(cacheType,...args){
-        if(cacheType == "fs"){
-            return new LocalWSCache(...args);
-        } else {
-            throw new Error("Unknown cache type " + cacheType);
+        switch(cacheType){
+            case "fs": return new LocalWSCache(...args);
+            case "memory": return new MemoryCache(...args);
+            default:
+                $$.exception("Unknown blockchain cache "+ cacheType);
         }
     }
 }

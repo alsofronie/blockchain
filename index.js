@@ -7,6 +7,8 @@ var pskcrypto = require("pskcrypto");
     class for Command or Result transactions
  */
 function CRTransaction(swarmType, command, input, output, currentPulse) {
+    this.swarmType = swarmType;
+
     if(!command){
         this.input      = input;
         this.output     = output;
@@ -21,8 +23,6 @@ function CRTransaction(swarmType, command, input, output, currentPulse) {
     this.digest     = pskcrypto.hashValues(this);
 }
 
-exports.createTransaction =
-
 module.exports = {
     createBlockchain:function(worldStateCache, historyStorage, algorithm, loadDefaultConstitution){
         return require("./pskdb").startDefaultDB(worldStateCache, historyStorage, algorithm, loadDefaultConstitution);
@@ -34,9 +34,12 @@ module.exports = {
         return require("./worldStateCaches").createCache(storageType,...args);
     },
     createConsensusAlgorithm:function(name,...args){
-        return require("./consensusFactory").createAlgorithm(name,...args);
+        return require("./consensusAlgortimFactory").createAlgorithm(name,...args);
     },
     createCRTransaction:function (swarmType, command, input, output, currentPulse) {
         return new CRTransaction(swarmType, command, input, output, currentPulse);
+    },
+     createBlock:function (blockset, currentPulse) {
+        return {blockset, currentPulse};
     }
 }

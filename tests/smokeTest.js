@@ -18,7 +18,7 @@ var consensusAlgorithm  =  bm.createConsensusAlgorithm("direct");
 bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm);
 
 const agentAlias = "Smoky";
-assert.begin("Simple smoke test")
+assert.begin("Running simple smoke test for PSK blockchain ")
 
 assert.callback("PK values should be persisted", function(done){
     $$.blockchain.start(function(err, res){

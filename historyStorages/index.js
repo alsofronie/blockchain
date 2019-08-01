@@ -12,15 +12,14 @@ function FsHistoryStorage(path){
 }
 
 
-function MemoryStorage(path){
-    console.log(path);
+function MemoryStorage(){
     var observer;
     //send to callback all blocks newer then fromVSD
     this.observeNewBlocks = function(fromVSD, callback){
         observer = callback;
     }
 
-    this.saveBlock = function(block,announce){
+    this.saveBlock = function(block, announce){
 
     }
 }

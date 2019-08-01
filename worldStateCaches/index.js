@@ -4,12 +4,20 @@ function LocalWSCache(path){
     this.getState = function(callback){ //err, valuesFromCache
 
     }
+
+    this.updateState = function(internalValues){
+        console.log("Commiting in folder cahce ", internalValues)
+    }
 }
 
 function MemoryCache(){
 
     this.getState = function(callback){ //err, valuesFromCache
 
+    }
+
+    this.updateState = function(internalValues){
+        console.info("Commiting state in memory cache "/*, internalValues*/)
     }
 }
 

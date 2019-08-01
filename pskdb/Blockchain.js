@@ -1,61 +1,45 @@
-const consUtil = require('../signsensus/index').consUtil;
+const bm = require('../index');
 const beesHealer = require("swarmutils").beesHealer;
 
-function Blockchain(pds) {
 
-    this.beginTransaction = function (transactionSwarm) {
+function AliasIndex(assetType, pdsHandler) {
+    this.create = function (alias, uid) {
+        const assetAliases = this.getAliases();
 
-        if (!transactionSwarm) {
-            $$.exception("Can't begin a transaction outside of a swarm");
+        if (typeof assetAliases[alias] !== "undefined") {
+            $$.exception(`Alias ${alias} for assets of type ${assetType} already exists`);
         }
-        swarm = transactionSwarm;
-        return new Transaction(pds.getHandler(), transactionSwarm);
+
+        assetAliases[alias] = uid;
+
+        pdsHandler.writeKey(assetType + ALIASES, J(assetAliases));
     };
 
-    this.commit = function (transaction) {
-        const diff = pds.computeSwarmTransactionDiff(transaction.getSwarm(), transaction.getHandler());
-        const t = consUtil.createTransaction(0, diff);
-        const set = {};
-        set[t.digest] = t;
-        pds.commit(set, 1);
+    this.getUid = function (alias) {
+        const assetAliases = this.getAliases();
+        return assetAliases[alias];
     };
 
-    this.start = function(callback){
-        callback(null, pds);
+    this.getAliases = function () {
+        let aliases = pdsHandler.readKey(assetType + ALIASES);
+        return aliases ? JSON.parse(aliases) : {};
     }
 }
 
-function Transaction(pdsHandler, transactionSwarm) {
-    const ALIASES = '/aliases';
 
-    this.getSwarm = function(){
-        return transactionSwarm;
-    };
+const ALIASES = '/aliases';
+function createLookup(pdsHandler){
+    function hasAliases(spaceName) {
+        var ret  = !!pdsHandler.readKey(spaceName + ALIASES);
+        return ret;
+    }
 
-    this.getHandler = function () {
-        return pdsHandler;
-    };
-
-    this.add = function (asset) {
-        const swarmTypeName = asset.getMetadata('swarmTypeName');
-        const swarmId = asset.getMetadata('swarmId');
-
-        const aliasIndex = new AliasIndex(swarmTypeName);
-        if (asset.alias && aliasIndex.getUid(asset.alias) !== swarmId) {
-            aliasIndex.create(asset.alias, swarmId);
-        }
-
-        asset.setMetadata('persisted', true);
-        const serializedSwarm = beesHealer.asJSON(asset, null, null);
-
-        pdsHandler.writeKey(swarmTypeName + '/' + swarmId, J(serializedSwarm));
-    };
-
-    this.lookup = function (assetType, aid) { // aid == alias or id
+    return function (assetType, aid) { // aid == alias or id
         let localUid = aid;
+        assetType = $$.fixSwarmName(assetType);
 
         if (hasAliases(assetType)) {
-            const aliasIndex = new AliasIndex(assetType);
+            const aliasIndex = new AliasIndex(assetType, pdsHandler);
             localUid = aliasIndex.getUid(aid) || aid;
         }
 
@@ -69,47 +53,75 @@ function Transaction(pdsHandler, transactionSwarm) {
             return swarm;
         }
     };
+}
+
+function Blockchain(pds, algorithm) {
+
+    this.beginTransaction = function (transactionSwarm) {
+
+        if (!transactionSwarm) {
+            $$.exception("Can't begin a transaction outside of a swarm");
+        }
+        swarm = transactionSwarm;
+        return new Transaction(pds.getHandler(), transactionSwarm);
+    };
+
+    this.commit = function (transaction, asCommand) {
+        var swarm = transaction.getSwarm();
+        var handler =  transaction.getHandler();
+        const diff = pds.computeSwarmTransactionDiff(swarm,handler);
+
+        const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), asCommand, diff.input, diff.output, algorithm.getCurrentPulse());
+
+        algorithm.commit(pds, t)
+    };
+
+    this.start = function(callback){
+        callback(null, pds);
+    }
+
+    this.lookup = createLookup(pds.getHandler());
+}
+
+function Transaction(pdsHandler, transactionSwarm) {
+
+
+    this.getSwarm = function(){
+        return transactionSwarm;
+    };
+
+    this.getHandler = function () {
+        return pdsHandler;
+    };
+
+    this.add = function (asset) {
+        const swarmTypeName = asset.getMetadata('swarmTypeName');
+        const swarmId = asset.getMetadata('swarmId');
+
+        const aliasIndex = new AliasIndex(swarmTypeName, pdsHandler);
+        if (asset.alias && aliasIndex.getUid(asset.alias) !== swarmId) {
+            aliasIndex.create(asset.alias, swarmId);
+        }
+
+        asset.setMetadata('persisted', true);
+        const serializedSwarm = beesHealer.asJSON(asset, null, null);
+
+        pdsHandler.writeKey(swarmTypeName + '/' + swarmId, J(serializedSwarm));
+    };
+
+    this.lookup = createLookup(pdsHandler);
 
     this.loadAssets = function (assetType) {
+        assetType = $$.fixSwarmName(assetType);
         const assets = [];
 
-        const aliasIndex = new AliasIndex(assetType);
+        const aliasIndex = new AliasIndex(assetType, pdsHandler);
         Object.keys(aliasIndex.getAliases()).forEach(alias => {
             assets.push(this.lookup(assetType, alias));
         });
 
         return assets;
     };
-
-
-
-    function hasAliases(spaceName) {
-        return !!pdsHandler.readKey(spaceName + ALIASES);
-    }
-
-    function AliasIndex(assetType) {
-        this.create = function (alias, uid) {
-            const assetAliases = this.getAliases();
-
-            if (typeof assetAliases[alias] !== "undefined") {
-                $$.exception(`Alias ${alias} for assets of type ${assetType} already exists`);
-            }
-
-            assetAliases[alias] = uid;
-
-            pdsHandler.writeKey(assetType + ALIASES, J(assetAliases));
-        };
-
-        this.getUid = function (alias) {
-            const assetAliases = this.getAliases();
-            return assetAliases[alias];
-        };
-
-        this.getAliases = function () {
-            let aliases = pdsHandler.readKey(assetType + ALIASES);
-            return aliases ? JSON.parse(aliases) : {};
-        }
-    }
 }
 
 module.exports = Blockchain;

@@ -3,7 +3,7 @@ var cutil   = require("../signsensus/lib/consUtil");
 var ssutil  = require("pskcrypto");
 
 
-function Storage(parentStorage){
+function DataShell(parentStorage){
     var cset            = {};  // containes all keys in parent storage, contains only keys touched in handlers
     var writeSet        = !parentStorage ? cset : {};   //contains only keys modified in handlers
 
@@ -146,7 +146,7 @@ function Storage(parentStorage){
 
     this.commit = function(blockSet){
         var i = 0;
-        var orderedByTime = cutil.orderTransactions(blockSet);
+        var orderedByTime = cutil.orderCRTransactions(blockSet);
 
         while(i < orderedByTime.length){
             var t = orderedByTime[i];
@@ -169,13 +169,15 @@ function Storage(parentStorage){
     }
 }
 
-function PDS(worldStateCache, historyStorage, consensusAlgorithm){
+function PDS(worldStateCache, historyStorage){
 
-    var mainStorage = new Storage(null);
+    var mainStorage = new DataShell(null);
     var self = this;
 
+    var currentPulse = 0;
+
     this.getHandler = function(){ // a way to work with PDS
-        var tempStorage = new Storage(mainStorage);
+        var tempStorage = new DataShell(mainStorage);
         return tempStorage;
     }
 
@@ -187,17 +189,17 @@ function PDS(worldStateCache, historyStorage, consensusAlgorithm){
     }
 
     this.computePTBlock = function(nextBlockSet){
-        var tempStorage = new Storage(mainStorage);
+        var tempStorage = new DataShell(mainStorage);
         return tempStorage.computePTBlock(nextBlockSet);
 
     }
 
     this.commit = function(block){
         var blockSet = block.blockset;
-        var currentPulse = block.currentPulse;
+        currentPulse = block.currentPulse;
         mainStorage.commit(blockSet);
         var internalValues = mainStorage.getInternalValues(currentPulse, false);
-        worldStateCache.updateState(internalValues)
+        worldStateCache.updateState(internalValues);
         historyStorage.saveBlock( block, false);
     }
 
@@ -217,6 +219,10 @@ function PDS(worldStateCache, historyStorage, consensusAlgorithm){
                 self.commit(newBlock);
             })
         });
+    }
+
+    this.getCurrentPulse = function(){
+        return currentPulse;
     }
 
 }

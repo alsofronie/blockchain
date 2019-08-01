@@ -16,24 +16,6 @@ function Pulse(signer, currentPulseNumber, block, newTransactions, vsd, top, las
 }
 
 
-/*
-function Transaction(currentPulse, swarm) {
-    this.input      = swarm.input;
-    this.output     = swarm.output;
-    this.swarm      = swarm;
-
-    var arr = process.hrtime();
-    this.second     = arr[0];
-    this.nanosecod  = arr[1];
-
-    this.CP         = currentPulse;
-    this.digest     = pskcrypto.hashValues(this);
-}
-
-exports.createTransaction = function (currentPulse, swarm) {
-    return new Transaction(currentPulse, swarm);
-}*/
-
 exports.createPulse = function (signer, currentPulseNumber, block, newTransactions, vsd, top, last) {
     return new Pulse(signer, currentPulseNumber, block, newTransactions, vsd, top, last);
 }
@@ -57,6 +39,7 @@ exports.orderCRTransactions = function (pset) { //order in place the pset array
     })
     return arr;
 }
+
 
 function getMajorityFieldInPulses(allPulses, fieldName, extractFieldName, votingBox) {
     var counterFields = {};

@@ -9,8 +9,8 @@ module.exports = {
         let pds = require('./PDS').newPDS(worldStateCache, historyStorage);
         return new Blockchain(pds, consensusAlgorithm);
     },
-    startDefaultDB: function (worldStateCache, historyStorage, algorithm, loadDefaultConstitution) {
-        if ($$.blockchain) {
+    startDefaultDB: function (worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forceReboot) {
+        if ($$.blockchain && !forceReboot) {
             $$.exception('$$.blockchain is already defined. Throwing an exception,');
         }
         $$.blockchain = this.startDB(worldStateCache, historyStorage, algorithm, loadDefaultConstitution);

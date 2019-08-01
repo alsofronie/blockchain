@@ -1,47 +1,62 @@
-require('../../../../builds/devel/pskruntime');
+require('../../../psknode/bundles/pskruntime');
 //require('../../../../builds/devel/psknode');
 var assert = require('double-check').assert;
-var fs = require("fs");
 
+require('testUtil/simplestConstitution');
+
+var tu = require('testUtil');
 const storageFolder = "./storageFolder";
-
-fs.unlink(storageFolder+"/history");
-fs.unlink(storageFolder+"/cache");
+tu.deleteFolderRecursive(storageFolder);
 
 var bm = require('../index');
 
-var worldStateCache     =  blockchain.createWorldStateCache("fs",storageFolder);
-var historyStorage      =  blockchain.createHistoryStorage("fs", storageFolder);
-
-bm.createBlockchain(worldStateCache, historyStorage, true);
-
-$$.blockchain.start(function(err, res){
-
-    assert.null(err);
-
-    const transaction = $$.blockchain.beginTransaction({});
-    var alias = "Smoky";
-
-    const agentAsset = transaction.lookup('global.Agent', agent);
-
-    agentAsset.init(alias, "publicKey");
-    try {
-        transaction.add(agentAsset);
-        $$.blockchain.commit(transaction);
-    } catch (err) {
-        this.return(new Error("Agent already exists"));
-        return;
-    }
+var worldStateCache     =  bm.createWorldStateCache("fs", storageFolder);
+var historyStorage      =  bm.createHistoryStorage("fs", storageFolder);
+var consensusAlgorithm  =  bm.createConsensusAlgorithm("direct");
 
 
-    const testTransaction = $$.blockchain.beginTransaction({});
+bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm);
 
-    var lookupAgent = transaction.lookup('global.Agent', agent);
+const agentAlias = "Smoky";
+assert.begin("Running folder persistence smoke test for PSK blockchain")
 
-    assert.callback('Values should match', function(done) {
-        assert.equal(lookupAgent.alias,alias);
+function restartBlockchain(done){
+    var worldStateCache     =  bm.createWorldStateCache("fs", storageFolder);
+    var historyStorage      =  bm.createHistoryStorage("fs", storageFolder);
+    var consensusAlgorithm  =  bm.createConsensusAlgorithm("direct");
+    bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, false, true);
+    $$.blockchain.start(function(err, res){
+        var agent = $$.blockchain.lookup("Agent", agentAlias);
+        assert.equal(agent.publicKey,"withoutPK");
         done();
+    })
+}
+
+function restartBlockchainWithoutCache(done){
+    var worldStateCache     =  bm.createWorldStateCache("none" );
+    var historyStorage      =  bm.createHistoryStorage("fs", storageFolder);
+    var consensusAlgorithm  =  bm.createConsensusAlgorithm("direct");
+    bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, false, true);
+    $$.blockchain.start(function(err, res){
+        var agent = $$.blockchain.lookup("Agent", agentAlias);
+        assert.equal(agent.publicKey,"withoutPK");
+        done();
+    })
+}
+
+assert.callback("PK values should be persisted", function(done){
+    $$.blockchain.start(function(err, res){
+        assert.isNull(err);
+        $$.transactions.start("Constitution", "addAgent","superMan", "withoutPK");
+        $$.transactions.start("Constitution", "addAgent",agentAlias, "withoutPK");
+
+        restartBlockchain(function(){
+            restartBlockchainWithoutCache(done)
+        });
     });
-});
+})
+
+
+
 
 

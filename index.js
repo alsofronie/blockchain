@@ -24,8 +24,8 @@ function CRTransaction(swarmType, command, input, output, currentPulse) {
 }
 
 module.exports = {
-    createBlockchain:function(worldStateCache, historyStorage, algorithm, loadDefaultConstitution){
-        return require("./pskdb").startDefaultDB(worldStateCache, historyStorage, algorithm, loadDefaultConstitution);
+    createBlockchain:function(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot){
+        return require("./pskdb").startDefaultDB(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot);
     },
     createHistoryStorage:function(storageType,...args){
         return require("./historyStorages").createStorage(storageType,...args);

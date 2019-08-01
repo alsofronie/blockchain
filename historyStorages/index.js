@@ -1,5 +1,4 @@
 function FsHistoryStorage(path){
-    console.log(path);
     var observer;
     //send to callback all blocks newer then fromVSD
     this.observeNewBlocks = function(fromVSD, callback){

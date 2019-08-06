@@ -103,14 +103,19 @@ function DataShell(parentStorage){
 
     function applyTransaction(t){
         let ret = true;
-        for(let k in t.output){
+
+        /*for(let k in t.output){
             if(!t.input.hasOwnProperty(k)){
-                ret = "Failed to apply in input.hasOwnProperty";
+                ret = "Failed to apply in input.hasOwnProperty for "+ k;
                 return ret;
             }
-        }
+        }*/
+
         for(let k in t.input){
             let transactionVersion = t.input[k];
+            if( transactionVersion == undefined){
+                transactionVersion = 0;
+            }
             let currentVersion = self.getVersion(k);
             if(currentVersion == undefined || currentVersion == null){
                 currentVersion = 0;

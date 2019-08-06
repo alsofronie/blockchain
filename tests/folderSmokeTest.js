@@ -34,6 +34,8 @@ function mainTest(err, storageFolder) {
         bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, false, true);
         $$.blockchain.start(function (err, res) {
             var agent = $$.blockchain.lookup("Agent", agentAlias);
+            $$.fixMe("If we uncomment the next line,it fails. investigate and fix this!");
+            //$$.transactions.start("Constitution", "addAgent", agentAlias+"WithC", "withoutPK");
             assert.equal(agent.publicKey, "withoutPK");
             done();
         })
@@ -45,6 +47,8 @@ function mainTest(err, storageFolder) {
         var consensusAlgorithm = bm.createConsensusAlgorithm("direct");
         bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, false, true);
         $$.blockchain.start(function (err, res) {
+
+            $$.transactions.start("Constitution", "addAgent", agentAlias+"WithoutC", "withoutPK");
             var agent = $$.blockchain.lookup("Agent", agentAlias);
             assert.equal(agent.publicKey, "withoutPK");
             done();
@@ -56,6 +60,7 @@ function mainTest(err, storageFolder) {
             assert.isNull(err);
             $$.transactions.start("Constitution", "addAgent", "superMan", "withoutPK");
             $$.transactions.start("Constitution", "addAgent", agentAlias, "withoutPK");
+            $$.transactions.start("Constitution", "addAgent", agentAlias+"XXX", "withoutPK");
 
             restartBlockchainFromCache(function () {
                 restartBlockchainWithoutCache(done)

@@ -3,11 +3,10 @@ var mod = require("../index");
 function DirectCommitAlgorithm(){
     var currentPulse = 0;
     this.commit = function(pds, transaction){
-        currentPulse++;
         const set = {};
         set[transaction.digest] = transaction;
         pds.commit(mod.createBlock(set, currentPulse));
-        //currentPulse = pds.getCurrentPulse();
+        currentPulse++;
     }
 
     this.getCurrentPulse = function(){

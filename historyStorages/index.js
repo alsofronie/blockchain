@@ -13,20 +13,23 @@ function FsHistoryStorage(folder) {
 
     this.getLatestBlockNumber = function (callback) {
         fs.readFile(blocksPath + "/index", function (err, res) {
-            var maxBlockNumber = 0;
-            try {
-                $$.propagateError(err, callback);
+            let maxBlockNumber = 0;
+            if(err){
+                callback(err);
+            }else{
                 maxBlockNumber = parseInt(res);
                 callback(null, maxBlockNumber);
-            } catch (err) {
             }
         });
     }
 
     this.loadSpecificBlock = function (blockNumber, callback) {
         fs.readFile(blocksPath + "/" + blockNumber, function (err, res) {
-            $$.propagateError(callback);
-            callback(null, JSON.parse(res));
+            if (err) {
+                callback(err, null);
+            } else {
+                callback(null, JSON.parse(res));
+            }
         });
     }
 

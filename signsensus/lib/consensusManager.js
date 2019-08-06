@@ -29,7 +29,7 @@ var pulseSwarm = $$.flow.describe("pulseSwarm", {
 
         this.pulsesHistory = {};
 
-        global["Tranzactions_Time"] = 0;        // used in "pskdb\lib\InMemoryPDS.js"
+
 
         this.vsd = this.pdsAdapter.getVSD();
 
@@ -183,13 +183,6 @@ var pulseSwarm = $$.flow.describe("pulseSwarm", {
         return ptBlock.map(function (item) {
             return item.slice(0, 8);
         }).join(" ");
-    },
-    exportStatistics: function () {
-        return {
-            "NUMBER_OF_TRANZACTIONS_PER_SEC": this.commitCounter / GLOBAL_MAX_TRANSACTION_TIME,
-            "NUMBER_OF_PULSES": this.currentPulse,
-            "TIME_TO_COMMIT_TRANZACTION": global["Tranzactions_Time"] / this.commitCounter
-        };
     },
     dump: function () {
         // this.print("Final");

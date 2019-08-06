@@ -102,17 +102,23 @@ function DataShell(parentStorage){
     }
 
     function applyTransaction(t){
-        for(var k in t.output){
+        let ret = true;
+        for(let k in t.output){
             if(!t.input.hasOwnProperty(k)){
-                return false;
+                ret = "Failed to apply in input.hasOwnProperty";
+                return ret;
             }
         }
-        for(var k in t.input){
-            var transactionVersion = t.input[k];
-            var currentVersion = self.getVersion(k);
+        for(let k in t.input){
+            let transactionVersion = t.input[k];
+            let currentVersion = self.getVersion(k);
+            if(currentVersion == undefined || currentVersion == null){
+                currentVersion = 0;
+            }
             if(transactionVersion != currentVersion){
                 //console.log(k, transactionVersion , currentVersion);
-                return false;
+                ret = "Failed to apply in transactionVersion != currentVersion (" + transactionVersion + "!="+ currentVersion + ")";
+                return ret;
             }
         }
 
@@ -120,13 +126,11 @@ function DataShell(parentStorage){
             self.writeKey(k, t.output[k]);
         }
 
-		var arr = process.hrtime();
+		/*var arr = process.hrtime();
 		var current_second = arr[0];
 		var diff = current_second-t.second;
-
-		global["Tranzactions_Time"]+=diff;
-
-		return true;
+        */
+		return ret;
     }
 
     this.computePTBlock = function(nextBlockSet){   //make a transactions block from nextBlockSet by removing invalid transactions from the key versions point of view
@@ -145,15 +149,14 @@ function DataShell(parentStorage){
     }
 
     this.commit = function(blockSet){
-        var i = 0;
-        var orderedByTime = cutil.orderCRTransactions(blockSet);
+        let i = 0;
+        let orderedByTime = cutil.orderCRTransactions(blockSet);
 
         while(i < orderedByTime.length){
-            var t = orderedByTime[i];
-            if(!applyTransaction(t)){ //paranoid check,  fail to work if a majority is corrupted
-                //pretty bad
-                //throw new Error("Failed to commit an invalid block. This could be a nasty bug or the stakeholders majority is corrupted! It should never happen!");
-                console.log("Failed to commit an invalid block. This could be a nasty bug or the stakeholders majority is corrupted! It should never happen!"); //TODO: replace with better error handling
+            let t = orderedByTime[i];
+            let success = applyTransaction(t);
+            if(success !== true){ //paranoid check,  fail to work if a majority is corrupted
+                $$.err("Failed to commit a  block. Signal of nasty bug or the stakeholders majority is corrupted!", success);
             }
             i++;
         }
@@ -194,13 +197,15 @@ function PDS(worldStateCache, historyStorage){
 
     }
 
-    this.commit = function(block){
+    this.commit = function(block, doNotSave){
         let blockSet = block.blockset;
         currentPulse = block.currentPulse;
         mainStorage.commit(blockSet);
-        let internalValues = mainStorage.getInternalValues(currentPulse, false);
-        worldStateCache.updateState(internalValues, $$.logError);
-        historyStorage.appendBlock( block, false, $$.logError);
+        if(!doNotSave){
+            let internalValues = mainStorage.getInternalValues(currentPulse, false);
+            worldStateCache.updateState(internalValues, $$.logError);
+            historyStorage.appendBlock( block, false, $$.logError);
+        }
     }
 
     this.getVSD = function (){
@@ -211,17 +216,32 @@ function PDS(worldStateCache, historyStorage){
         let counter = 0;
         let lbn = 0;
         let state = 0;
+        var cp = 0;
+
+        function loadNextBlock(){
+            if(cp > lbn){
+                reportResultCallback(null,lbn);
+            } else {
+                historyStorage.loadSpecificBlock(cp, function(err, block){
+                    if(block){
+                        self.commit(block, true);
+                    }
+                    cp++;
+                    loadNextBlock();
+                })
+            }
+        }
+
         function tryToBoot(){
             if(counter == 2){
-                var cp = 0;
                 if(state && state.currentPulse){
                     cp = state.currentPulse;
                 }
-                console.log("Reloading from pulse ", cp, "and fetching until ", lbn);
+                console.log("Reloading from cache at pulse ", cp, "and rebuilding state until pulse", lbn);
                 if(state.currentPulse){
                     mainStorage.initialiseInternalValue(state);
                 }
-                reportResultCallback(null,lbn);
+                loadNextBlock();
             }
         }
 

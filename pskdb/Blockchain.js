@@ -58,7 +58,6 @@ function createLookup(pdsHandler){
 function Blockchain(pds, algorithm) {
 
     this.beginTransaction = function (transactionSwarm) {
-
         if (!transactionSwarm) {
             $$.exception("Can't begin a transaction outside of a swarm");
         }
@@ -76,8 +75,8 @@ function Blockchain(pds, algorithm) {
         algorithm.commit(pds, t)
     };
 
-    this.start = function(callback){
-        callback(null, pds);
+    this.start = function(reportBootingFinishedCallback){
+        pds.initialise(reportBootingFinishedCallback);
     }
 
     this.lookup = createLookup(pds.getHandler());

@@ -1,61 +1,69 @@
-function FsHistoryStorage(folder){
+function FsHistoryStorage(folder) {
 
-    const blocksPath = folder+"/blocks";
+    const blocksPath = folder + "/blocks";
     var fs = require("fs");
 
+    fs.mkdir(blocksPath, function (err) {
+    });
+
+    this.appendBlock = function (block, announceFlag, callback) {
+        fs.writeFile(blocksPath + "/index", block.currentPulse.toString(), $$.logError);
+        fs.writeFile(blocksPath + "/" + block.currentPulse, JSON.stringify(block, null, 1), callback);
+    }
+
+    this.getLatestBlockNumber = function (callback) {
+        fs.readFile(blocksPath + "/index", function (err, res) {
+            var maxBlockNumber = 0;
+            try {
+                $$.propagateError(err, callback);
+                maxBlockNumber = parseInt(res);
+                callback(null, maxBlockNumber);
+            } catch (err) {
+            }
+        });
+    }
+
+    this.loadSpecificBlock = function (blockNumber, callback) {
+        fs.readFile(blocksPath + "/" + blockNumber, function (err, res) {
+            $$.propagateError(callback);
+            callback(null, JSON.parse(res));
+        });
+    }
+
+    ////////////////////////
     var observer;
     //send to callback all blocks newer then fromVSD
-    this.observeNewBlocks = function(fromVSD, callback){
+    this.observeNewBlocks = function (fromVSD, callback) {
         observer = callback;
-    }
-
-    this.appendBlock = function(block,announceFlag, callback){
-        fs.writeFile(blocksPath, block.toString(), callback)
-    }
-
-    this.loadHistoryIteratively = function(from, to, eachBlockCallback){
-    //readline
-    }
-
-    this.loadSpecificBlock = function(blockNumber,announce){
-        fs.writeFile(blocksPath, block.toString(), callback)
     }
 }
 
 
-function MemoryStorage(){
-
+function MemoryStorage() {
     var blocks = [];
-    var observer;
-    //send to callback all blocks newer then fromVSD
-    this.observeNewBlocks = function(fromVSD, callback){
-        observer = callback;
-    }
 
-    this.appendBlock = function(block,announceFlag, callback){
+    this.appendBlock = function (block, announceFlag, callback) {
         blocks.push(block);
+        callback(null, block);
+
     }
 
-    this.loadHistoryIteratively = function(from, to, eachBlockCallback){
-        if(to == "end"){
-            to = blocks.length;
-        }
-        for(let i = from; i < to;i++){
-            eachBlockCallback(blocks[i]);
-        }
+    this.getLatestBlockNumber = function (callback) {
+        callback(null, blocks.length);
     }
 
-    this.loadSpecificBlock = function(blockNumber,callback){
+    this.loadSpecificBlock = function (blockNumber, callback) {
         callback(null, blocks[blockNumber]);
     }
-
 }
 
 module.exports = {
-    createStorage:function(storageType,...args){
-        switch(storageType){
-            case "fs": return new FsHistoryStorage(...args);
-            case "memory": return new  MemoryStorage(...args);
+    createStorage: function (storageType, ...args) {
+        switch (storageType) {
+            case "fs":
+                return new FsHistoryStorage(...args);
+            case "memory":
+                return new MemoryStorage(...args);
             default:
                 $$.exception("Unknown blockchain storage " + storageType);
         }

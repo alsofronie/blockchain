@@ -195,39 +195,62 @@ function PDS(worldStateCache, historyStorage){
     }
 
     this.commit = function(block){
-        var blockSet = block.blockset;
+        let blockSet = block.blockset;
         currentPulse = block.currentPulse;
         mainStorage.commit(blockSet);
-        var internalValues = mainStorage.getInternalValues(currentPulse, false);
-        worldStateCache.updateState(internalValues);
-        historyStorage.saveBlock( block, false);
+        let internalValues = mainStorage.getInternalValues(currentPulse, false);
+        worldStateCache.updateState(internalValues, $$.logError);
+        historyStorage.appendBlock( block, false, $$.logError);
     }
 
     this.getVSD = function (){
         return mainStorage.getVSD(false);
     }
 
-    this.initialise = function(){
-        worldStateCache.getState(function(err, valuesFromCache){
-
-            $$.autoThrow(err, "PDS dailed to load initial state");
-            if(valuesFromCache){
-                mainStorage.initialiseInternalValue(valuesFromCache);
+    this.initialise = function(reportResultCallback){
+        let counter = 0;
+        let lbn = 0;
+        let state = 0;
+        function tryToBoot(){
+            if(counter == 2){
+                var cp = 0;
+                if(state && state.currentPulse){
+                    cp = state.currentPulse;
+                }
+                console.log("Reloading from pulse ", cp, "and fetching until ", lbn);
+                if(state.currentPulse){
+                    mainStorage.initialiseInternalValue(state);
+                }
+                reportResultCallback(null,lbn);
             }
-            historyStorage.observeNewBlocks(self.getVSD(), function(err, newBlock){
-                console.log("New block arrived", newBlock);
-                self.commit(newBlock);
-            })
-        });
+        }
+
+        function gotLatestBlock(err, val){
+            counter++;
+            if(!err){
+                lbn = val;
+            }
+            tryToBoot();
+        }
+        function gotState(err, val){
+            counter++;
+
+            if(!err){
+                state = val;
+            }
+            tryToBoot();
+        }
+
+        worldStateCache.getState(gotState);
+        historyStorage.getLatestBlockNumber(gotLatestBlock);
     }
 
     this.getCurrentPulse = function(){
         return currentPulse;
     }
-
 }
 
 
-exports.newPDS = function(worldStateCache, historyStorage, algorithm){
-    return new PDS(worldStateCache, historyStorage, algorithm);
+exports.newPDS = function(worldStateCache, historyStorage){
+    return new PDS(worldStateCache, historyStorage);
 }

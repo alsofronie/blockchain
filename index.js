@@ -1,5 +1,5 @@
 ___DISABLE_OBSOLETE_ZIP_ARCHIVER_WAIT_FOR_BARS = true;
-require("../../builds/devel/pskruntime.js");
+require("../../../psknode/bundles/pskruntime.js");
 require("callflow");
 var pskcrypto = require("pskcrypto");
 

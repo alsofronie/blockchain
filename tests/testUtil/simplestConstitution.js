@@ -15,6 +15,7 @@ $$.transaction.describe("Constitution", {
     addAgent: function (alias, publicKey) {
         var reference = $$.asset.start("Agent", "init", alias, publicKey);
         this.transaction.add(reference);
-        $$.blockchain.commit(this.transaction);
+        //$$.blockchain.commit(this.transaction);
+        this.commit();
     }
 })

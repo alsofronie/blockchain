@@ -41,5 +41,8 @@ module.exports = {
     },
      createBlock:function (blockset, currentPulse) {
         return {blockset, currentPulse};
+    },
+    createSignatureProvider:function(){
+        return require("./consensusAlgortimFactory").createSignatureProvider(name,...args);
     }
 }

@@ -28,7 +28,7 @@ function AliasIndex(assetType, pdsHandler) {
 
 
 const ALIASES = '/aliases';
-function createLookup(pdsHandler){
+function createLookup(pdsHandler, SPRegistry){
     function hasAliases(spaceName) {
         var ret  = !!pdsHandler.readKey(spaceName + ALIASES);
         return ret;
@@ -56,6 +56,8 @@ function createLookup(pdsHandler){
 }
 
 function Blockchain(pds, algorithm) {
+    var SPRegistry = require("../securityParadigmRegistry/securityParadigmRegistry").getRegistry(this);
+    let signatureProvider;
 
     this.beginTransaction = function (transactionSwarm) {
         if (!transactionSwarm) {
@@ -71,15 +73,32 @@ function Blockchain(pds, algorithm) {
         const diff = pds.computeSwarmTransactionDiff(swarm,handler);
 
         const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), asCommand, diff.input, diff.output, algorithm.getCurrentPulse());
-
-        algorithm.commit(pds, t)
+        algorithm.commit(pds, t);
     };
 
     this.start = function(reportBootingFinishedCallback){
         pds.initialise(reportBootingFinishedCallback);
-    }
+    };
 
-    this.lookup = createLookup(pds.getHandler());
+
+    this.lookup = createLookup(pds.getHandler(), SPRegistry);
+
+
+    this.signAs = function(agentId, msg){
+        return signatureProviderInstance.sign(agentId, msg);
+    };
+
+    this.verifySignature = function(msg, signatures){
+        return signatureProvider.verify(msg, signatures);
+    };
+
+    this.registerSignatureProvider = function(signatureProviderInstance){
+        signatureProvider = signatureProviderInstance;
+    };
+
+    this.registerSecurityParadigm = function(SPName, apiName, factory){
+        return SPRegistry.register(SPName, apiName, factory);
+    }
 }
 
 function Transaction(pdsHandler, transactionSwarm) {

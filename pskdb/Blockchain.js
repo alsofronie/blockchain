@@ -1,8 +1,8 @@
 const bm = require('../index');
 const beesHealer = require("swarmutils").beesHealer;
+var CNST = require("../moduleConstants");
 
-
-function AliasIndex(assetType, pdsHandler) {
+function AliasIndex(assetType, pdsHandler, worldStateCache) {
     this.create = function (alias, uid) {
         const assetAliases = this.getAliases();
 
@@ -12,7 +12,7 @@ function AliasIndex(assetType, pdsHandler) {
 
         assetAliases[alias] = uid;
 
-        pdsHandler.writeKey(assetType + ALIASES, J(assetAliases));
+        worldStateCache.writeKey(assetType + CNST.ALIASES, J(assetAliases));
     };
 
     this.getUid = function (alias) {
@@ -21,16 +21,16 @@ function AliasIndex(assetType, pdsHandler) {
     };
 
     this.getAliases = function () {
-        let aliases = pdsHandler.readKey(assetType + ALIASES);
+        let aliases = worldStateCache.readKey(assetType + CNST.ALIASES);
         return aliases ? JSON.parse(aliases) : {};
     }
 }
 
 
-const ALIASES = '/aliases';
-function createLookup(pdsHandler, SPRegistry){
+
+function createLookup(pdsHandler, SPRegistry, worldStateCache){
     function hasAliases(spaceName) {
-        var ret  = !!pdsHandler.readKey(spaceName + ALIASES);
+        var ret  = !!worldStateCache.readKey(spaceName + CNST.ALIASES);
         return ret;
     }
 
@@ -39,7 +39,7 @@ function createLookup(pdsHandler, SPRegistry){
         assetType = $$.fixSwarmName(assetType);
 
         if (hasAliases(assetType)) {
-            const aliasIndex = new AliasIndex(assetType, pdsHandler);
+            const aliasIndex = new AliasIndex(assetType, pdsHandler, worldStateCache);
             localUid = aliasIndex.getUid(aid) || aid;
         }
 
@@ -55,7 +55,7 @@ function createLookup(pdsHandler, SPRegistry){
     };
 }
 
-function Blockchain(pds, algorithm) {
+function Blockchain(pds, consensusAlgorithm, worldStateCache) {
     var SPRegistry = require("../strategies/securityParadigmRegistry/securityParadigmRegistry").getRegistry(this);
     let signatureProvider;
 
@@ -63,7 +63,7 @@ function Blockchain(pds, algorithm) {
         if (!transactionSwarm) {
             $$.exception("Can't begin a transaction outside of a swarm instance from transactions namespace");
         }
-        return new Transaction(pds.getHandler(), transactionSwarm);
+        return new Transaction(pds.getHandler(), transactionSwarm, worldStateCache);
     };
 
     this.commit = function (transaction, asCommand) {
@@ -71,8 +71,8 @@ function Blockchain(pds, algorithm) {
         var handler =  transaction.getHandler();
         const diff = pds.computeSwarmTransactionDiff(swarm,handler);
 
-        const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), asCommand, diff.input, diff.output, algorithm.getCurrentPulse());
-        algorithm.commit(pds, t);
+        const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), asCommand, diff.input, diff.output, consensusAlgorithm.getCurrentPulse());
+        consensusAlgorithm.commit(pds, t);
     };
 
     this.start = function(reportBootingFinishedCallback){
@@ -80,7 +80,7 @@ function Blockchain(pds, algorithm) {
     };
 
 
-    this.lookup = createLookup(pds.getHandler(), SPRegistry);
+    this.lookup = createLookup(pds.getHandler(), SPRegistry, worldStateCache);
 
     this.getSPRegistry = function(){
         return SPRegistry;
@@ -103,7 +103,7 @@ function Blockchain(pds, algorithm) {
     }
 }
 
-function Transaction(pdsHandler, transactionSwarm) {
+function Transaction(pdsHandler, transactionSwarm, worldStateCache) {
 
 
     this.getSwarm = function(){
@@ -118,7 +118,7 @@ function Transaction(pdsHandler, transactionSwarm) {
         const swarmTypeName = asset.getMetadata('swarmTypeName');
         const swarmId = asset.getMetadata('swarmId');
 
-        const aliasIndex = new AliasIndex(swarmTypeName, pdsHandler);
+        const aliasIndex = new AliasIndex(swarmTypeName, pdsHandler, worldStateCache);
         if (asset.alias && aliasIndex.getUid(asset.alias) !== swarmId) {
             aliasIndex.create(asset.alias, swarmId);
         }
@@ -135,7 +135,7 @@ function Transaction(pdsHandler, transactionSwarm) {
         assetType = $$.fixSwarmName(assetType);
         const assets = [];
 
-        const aliasIndex = new AliasIndex(assetType, pdsHandler);
+        const aliasIndex = new AliasIndex(assetType, pdsHandler, worldStateCache);
         Object.keys(aliasIndex.getAliases()).forEach(alias => {
             assets.push(this.lookup(assetType, alias));
         });

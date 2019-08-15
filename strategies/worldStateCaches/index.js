@@ -1,4 +1,28 @@
+
+
+function StorageContainer(){
+    this.pskdb = {};
+    this.keys = {};
+    var self = this;
+    var latestState = {
+
+    };
+
+    this.readKey = function(key){
+        return self.keys[key];
+    }
+
+    this.writeKey = function(key, value){
+        self.keys[key] = value;
+    }
+}
+
 function LocalWSCache(folder) {
+    var storage = new StorageContainer();
+
+    this.readKey = storage.readKey;
+    this.writeKey = storage.writeKey;
+
     const worldStateCachePath = folder + "/worldSateCache";
     var fs = require("fs");
 
@@ -10,26 +34,33 @@ function LocalWSCache(folder) {
                 console.log("Initialisating empty blockchain state");
             } else {
                 objRes = JSON.parse(res);
-                callback(null, objRes);
+                storage.pskdb = objRes.pskdb;
+                storage.keys  = objRes.keys;
+                callback(null, storage.pskdb);
             }
         });
     }
 
     this.updateState = function (internalValues, callback) {
-        fs.writeFile(worldStateCachePath, JSON.stringify(internalValues, null, 1), callback);
+        storage.pskdb = internalValues;
+        fs.writeFile(worldStateCachePath, JSON.stringify(storage, null, 1), callback);
     }
 }
 
 function MemoryCache() {
-    var latestState = {};
+    var storage = new StorageContainer();
+
+    this.readKey = storage.readKey;
+    this.writeKey = storage.writeKey;
+
     this.getState = function (callback) { //err, valuesFromCache
-        callback(null, latestState);
+        callback(null, storage.pskdb);
     }
 
     this.updateState = function (internalValues, callback) {
         console.info("Commiting state in memory cache "/*, internalValues*/)
-        latestState = internalValues;
-        callback(null, latestState);
+        storage.pskdb = internalValues;
+        callback(null, storage.pskdb);
     }
 }
 

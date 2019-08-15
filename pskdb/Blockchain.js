@@ -56,14 +56,13 @@ function createLookup(pdsHandler, SPRegistry){
 }
 
 function Blockchain(pds, algorithm) {
-    var SPRegistry = require("../securityParadigmRegistry/securityParadigmRegistry").getRegistry(this);
+    var SPRegistry = require("../strategies/securityParadigmRegistry/securityParadigmRegistry").getRegistry(this);
     let signatureProvider;
 
     this.beginTransaction = function (transactionSwarm) {
         if (!transactionSwarm) {
-            $$.exception("Can't begin a transaction outside of a swarm");
+            $$.exception("Can't begin a transaction outside of a swarm instance from transactions namespace");
         }
-        swarm = transactionSwarm;
         return new Transaction(pds.getHandler(), transactionSwarm);
     };
 
@@ -83,6 +82,9 @@ function Blockchain(pds, algorithm) {
 
     this.lookup = createLookup(pds.getHandler(), SPRegistry);
 
+    this.getSPRegistry = function(){
+        return SPRegistry;
+    }
 
     this.signAs = function(agentId, msg){
         return signatureProviderInstance.sign(agentId, msg);

@@ -1,4 +1,5 @@
 
+
 $$.asset.describe("Agent", {
     public:{
         alias:"string:key",
@@ -7,6 +8,9 @@ $$.asset.describe("Agent", {
     init:function(alias, value){
         this.alias      = alias;
         this.publicKey  = value;
+    },
+    ctor:function(){
+        this.securityParadigm.constitutional();
     }
 });
 

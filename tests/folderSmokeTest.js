@@ -2,6 +2,7 @@ require('../../../psknode/bundles/pskruntime');
 //require('../../../../builds/devel/psknode');
 let dc = require('double-check');
 var assert = dc.assert;
+var bm = require('../index');
 require('testUtil/simplestConstitution');
 
 var tu = require('testUtil');
@@ -13,9 +14,9 @@ assert.begin("Running folder persistence smoke test for PSK blockchain")
 
 function mainTest(err, storageFolder) {
 
-    //assert.disableCleanings(); //to debug it during development of the test
+    assert.disableCleanings(); //to debug it during development of the test
 
-    var bm = require('../index');
+
 
     var worldStateCache = bm.createWorldStateCache("fs", storageFolder);
     var historyStorage = bm.createHistoryStorage("fs", storageFolder);

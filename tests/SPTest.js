@@ -4,11 +4,6 @@ var assert = require('double-check').assert;
 var bm = require('../index');
 
 require('testUtil/simplestConstitution');
-/*
-var tu = require('testUtil');
-const storageFolder = "./storageFolder";
-tu.deleteFolderRecursive(storageFolder); */
-
 
 
 var worldStateCache     =  bm.createWorldStateCache("memory");
@@ -26,7 +21,8 @@ assert.callback("PK values should be persisted", function(done){
         assert.isNull(err);
         $$.transactions.start("Constitution", "addAgent",agentAlias, "withoutPK");
         var agent = $$.blockchain.lookup("Agent", agentAlias);
-        assert.equal(agent.publicKey,"withoutPK");
+        assert.equal(agent.securityParadigm.mainParadigm , "Constitutional" );
+
         done();
     });
 })

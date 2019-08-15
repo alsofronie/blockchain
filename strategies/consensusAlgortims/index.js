@@ -1,4 +1,4 @@
-var mod = require("../index");
+var mod = require("../../index");
 
 function DirectCommitAlgorithm(){
     var currentPulse = 0;

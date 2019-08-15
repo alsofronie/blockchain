@@ -1,6 +1,6 @@
 ___DISABLE_OBSOLETE_ZIP_ARCHIVER_WAIT_FOR_BARS = true;
 require("../../../psknode/bundles/pskruntime.js");
-require("callflow");
+var callflowModule = require("callflow");
 var pskcrypto = require("pskcrypto");
 
 /*
@@ -23,18 +23,27 @@ function CRTransaction(swarmType, command, input, output, currentPulse) {
     this.digest     = pskcrypto.hashValues(this);
 }
 
+
+var assetUtils = require("./blockchainSwarmTypes/asset");
+var transactionUtils = require("./blockchainSwarmTypes/transaction");
+$$.assets           = callflowModule.createSwarmEngine("asset", assetUtils);
+$$.asset            = $$.assets;
+$$.transactions     = callflowModule.createSwarmEngine("transaction", transactionUtils);
+$$.transaction      = $$.transactions;
+
+
 module.exports = {
     createBlockchain:function(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot){
         return require("./pskdb").startDefaultDB(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot);
     },
     createHistoryStorage:function(storageType,...args){
-        return require("./historyStorages").createStorage(storageType,...args);
+        return require("./strategies/historyStorages").createStorage(storageType,...args);
     },
     createWorldStateCache:function(storageType,...args){
-        return require("./worldStateCaches").createCache(storageType,...args);
+        return require("./strategies/worldStateCaches").createCache(storageType,...args);
     },
     createConsensusAlgorithm:function(name,...args){
-        return require("./consensusAlgortimFactory").createAlgorithm(name,...args);
+        return require("./strategies/consensusAlgortims").createAlgorithm(name,...args);
     },
     createCRTransaction:function (swarmType, command, input, output, currentPulse) {
         return new CRTransaction(swarmType, command, input, output, currentPulse);
@@ -43,6 +52,7 @@ module.exports = {
         return {blockset, currentPulse};
     },
     createSignatureProvider:function(){
-        return require("./consensusAlgortimFactory").createSignatureProvider(name,...args);
+        return require("./strategies/consensusAlgortims").createSignatureProvider(name,...args);
     }
 }
+

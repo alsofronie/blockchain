@@ -3,6 +3,7 @@
 function StorageContainer(){
     this.pskdb = {};
     this.keys = {};
+    this.pulse = 0;
     var self = this;
     var latestState = {
 
@@ -36,6 +37,7 @@ function LocalWSCache(folder) {
                 objRes = JSON.parse(res);
                 storage.pskdb = objRes.pskdb;
                 storage.keys  = objRes.keys;
+                storage.pulse  = objRes.pulse;
                 callback(null, storage.pskdb);
             }
         });
@@ -60,6 +62,7 @@ function MemoryCache() {
     this.updateState = function (internalValues, callback) {
         console.info("Commiting state in memory cache "/*, internalValues*/)
         storage.pskdb = internalValues;
+        storage.pulse = internalValues.pulse;
         callback(null, storage.pskdb);
     }
 }

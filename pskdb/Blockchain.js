@@ -17,6 +17,7 @@ function AliasIndex(assetType, pdsHandler, worldStateCache) {
 
     this.getUid = function (alias) {
         const assetAliases = this.getAliases();
+        //console.log("assetAliases", assetAliases);
         return assetAliases[alias];
     };
 
@@ -35,6 +36,7 @@ function createLookup(pdsHandler, SPRegistry, worldStateCache){
     }
 
     return function (assetType, aid) { // aid == alias or id
+
         let localUid = aid;
         assetType = $$.fixSwarmName(assetType);
 
@@ -46,16 +48,17 @@ function createLookup(pdsHandler, SPRegistry, worldStateCache){
         const value = pdsHandler.readKey(assetType + '/' + localUid);
 
         if (!value) {
-            return $$.asset.start(assetType);
+            $$.log("Lookup fail, asset not found: ",assetType, " with alias", aid);
+            //return $$.asset.start(assetType);
+            return null;
         } else {
             const swarm = $$.asset.continue(assetType, JSON.parse(value));
-            swarm.setMetadata("persisted", true);
             return swarm;
         }
     };
 }
 
-function Blockchain(pds, consensusAlgorithm, worldStateCache) {
+function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
     var SPRegistry = require("../strategies/securityParadigmRegistry/securityParadigmRegistry").getRegistry(this);
     let signatureProvider;
 
@@ -63,24 +66,29 @@ function Blockchain(pds, consensusAlgorithm, worldStateCache) {
         if (!transactionSwarm) {
             $$.exception("Can't begin a transaction outside of a swarm instance from transactions namespace");
         }
-        return new Transaction(pds.getHandler(), transactionSwarm, worldStateCache);
+        return new Transaction(pskdb.getHandler(), transactionSwarm, worldStateCache, SPRegistry);
     };
 
     this.commit = function (transaction, asCommand) {
         var swarm = transaction.getSwarm();
         var handler =  transaction.getHandler();
-        const diff = pds.computeSwarmTransactionDiff(swarm,handler);
-
+        const diff = pskdb.computeSwarmTransactionDiff(swarm,handler);
+        console.log("Diff is", diff.output);
         const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), asCommand, diff.input, diff.output, consensusAlgorithm.getCurrentPulse());
-        consensusAlgorithm.commit(pds, t);
+        consensusAlgorithm.commit(t);
     };
 
     this.start = function(reportBootingFinishedCallback){
-        pds.initialise(reportBootingFinishedCallback);
+        pskdb.initialise(reportBootingFinishedCallback);
     };
 
 
-    this.lookup = createLookup(pds.getHandler(), SPRegistry, worldStateCache);
+    this.lookup = createLookup(pskdb.getHandler(), SPRegistry, worldStateCache);
+    /*
+    this.lookup = function(typeName, alias){
+        var lf = createLookup(pskdb.getHandler(), SPRegistry, worldStateCache);
+        return lf(typeName, alias);
+    }*/
 
     this.getSPRegistry = function(){
         return SPRegistry;
@@ -103,8 +111,9 @@ function Blockchain(pds, consensusAlgorithm, worldStateCache) {
     }
 }
 
-function Transaction(pdsHandler, transactionSwarm, worldStateCache) {
+function Transaction(pdsHandler, transactionSwarm, worldStateCache, SPRegistry) {
 
+    let self = this;
 
     this.getSwarm = function(){
         return transactionSwarm;
@@ -115,6 +124,7 @@ function Transaction(pdsHandler, transactionSwarm, worldStateCache) {
     };
 
     this.add = function (asset) {
+        console.log("Adding asset", asset.publicKey);
         const swarmTypeName = asset.getMetadata('swarmTypeName');
         const swarmId = asset.getMetadata('swarmId');
 
@@ -123,13 +133,13 @@ function Transaction(pdsHandler, transactionSwarm, worldStateCache) {
             aliasIndex.create(asset.alias, swarmId);
         }
 
-        asset.setMetadata('persisted', true);
+
         const serializedSwarm = beesHealer.asJSON(asset, null, null);
 
         pdsHandler.writeKey(swarmTypeName + '/' + swarmId, J(serializedSwarm));
     };
 
-    this.lookup = createLookup(pdsHandler);
+    this.lookup = createLookup(pdsHandler, SPRegistry, worldStateCache);
 
     this.loadAssets = function (assetType) {
         assetType = $$.fixSwarmName(assetType);
@@ -137,10 +147,14 @@ function Transaction(pdsHandler, transactionSwarm, worldStateCache) {
 
         const aliasIndex = new AliasIndex(assetType, pdsHandler, worldStateCache);
         Object.keys(aliasIndex.getAliases()).forEach(alias => {
-            assets.push(this.lookup(assetType, alias));
+            assets.push(self.lookup(assetType, alias));
         });
 
         return assets;
+    };
+
+    this.commit = function(){
+        $$.blockchain.commit(self);
     };
 }
 

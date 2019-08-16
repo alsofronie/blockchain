@@ -12,7 +12,7 @@ var pulsesHistory = {
 
 var artificialCP = 1;
 for( var d in pset){
-    pset[d].CP = artificialCP++;
+    pset[d].transactionPulse = artificialCP++;
 }
 
 //console.log(pset);

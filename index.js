@@ -19,17 +19,19 @@ function CRTransaction(swarmType, command, input, output, currentPulse) {
     var arr = process.hrtime();
     this.second     = arr[0];
     this.nanosecod  = arr[1];
-    this.CP         = currentPulse;
+    this.transactionPulse = currentPulse;
     this.digest     = pskcrypto.hashValues(this);
 }
 
 
-var assetUtils = require("./blockchainSwarmTypes/asset");
-var transactionUtils = require("./blockchainSwarmTypes/transaction");
+var assetUtils = require("./blockchainSwarmTypes/asset_swarm_template");
+var transactionUtils = require("./blockchainSwarmTypes/transaction_swarm_template");
 $$.assets           = callflowModule.createSwarmEngine("asset", assetUtils);
 $$.asset            = $$.assets;
 $$.transactions     = callflowModule.createSwarmEngine("transaction", transactionUtils);
 $$.transaction      = $$.transactions;
+
+var pskcryt = require("pskcrypto");
 
 
 module.exports = {
@@ -48,8 +50,11 @@ module.exports = {
     createCRTransaction:function (swarmType, command, input, output, currentPulse) {
         return new CRTransaction(swarmType, command, input, output, currentPulse);
     },
-     createBlock:function (blockset, currentPulse) {
-        return {blockset, currentPulse};
+     createBlock:function (blockset, pulse, previous) {
+        var block = {blockset, pulse, previous};
+        block.hash = pskcryt.hashValues(block);
+        return block;
+
     },
     createSignatureProvider:function(){
         return require("./strategies/consensusAlgortims").createSignatureProvider(name,...args);

@@ -69,7 +69,7 @@ var pulseSwarm = $$.flow.describe("pulseSwarm", {
                     this.level++;
                     //fs.writeFileSync(this.level+"-"+this.vsd+"-"+this.nodeName, JSON.stringify(resultSet));
                     var topDigest = ptBlock[ptBlock.length - 1];
-                    this.topPulseConsensus = this.pset[topDigest].CP;
+                    this.topPulseConsensus = this.pset[topDigest].transactionPulse;
                     consUtil.setsRemovePtBlockAndPastTransactions(this.pset, ptBlock, this.topPulseConsensus); //cleanings
                     var oldVsd = this.vsd;
                     this.vsd = this.pdsAdapter.getVSD();

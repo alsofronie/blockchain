@@ -7,6 +7,7 @@ module.exports = {
             require('../defaultConstitution/transactions/index');
         }
         let pds = require('./PDS').newPDS(worldStateCache, historyStorage);
+        consensusAlgorithm.pskdb = pds;
         return new Blockchain(pds, consensusAlgorithm, worldStateCache);
     },
     startDefaultDB: function (worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forceReboot) {

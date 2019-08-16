@@ -10,9 +10,7 @@ exports.createForObject = function(valueObject, thisObject, localId){
 	ret.asyncReturn     = null;
 	ret.return          = null;
 	ret.home            = null;
-	ret.isPersisted  	= function () {
-		return thisObject.getMetadata('persisted') === true;
-	};
+
 
 	ret.autoInit        = function(){
 		let sp = thisObject.getMetadata(CNST.SECURITY_PARADIGM);

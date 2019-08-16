@@ -7,8 +7,9 @@ function FsHistoryStorage(folder) {
     });
 
     this.appendBlock = function (block, announceFlag, callback) {
-        fs.writeFile(blocksPath + "/index", block.currentPulse.toString(), $$.logError);
-        fs.writeFile(blocksPath + "/" + block.currentPulse, JSON.stringify(block, null, 1), callback);
+        console.log("Writing block:", block.pulse);
+        fs.writeFile(blocksPath + "/index", block.pulse.toString(), $$.logError);
+        fs.writeFile(blocksPath + "/" + block.pulse, JSON.stringify(block, null, 1), callback);
     }
 
     this.getLatestBlockNumber = function (callback) {

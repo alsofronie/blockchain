@@ -10,7 +10,7 @@ function generateTransactions(noTransactions){
     for(var i=0; i<noTransactions; i++){
         var t = {};
         t.digest="T"+i;
-        t.CP = cutil.getRandomInt(5);
+        t.transactionPulse = cutil.getRandomInt(5);
         transactions.push(t);
     }
     return transactions;

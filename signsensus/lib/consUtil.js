@@ -27,8 +27,8 @@ exports.orderCRTransactions = function (pset) { //order in place the pset array
     }
 
     arr.sort(function (t1, t2) {
-        if (t1.CP < t2.CP) return -1;
-        if (t1.CP > t2.CP) return 1;
+        if (t1.transactionPulse < t2.transactionPulse) return -1;
+        if (t1.transactionPulse > t2.transactionPulse) return 1;
         if (t1.second < t2.second) return -1;
         if (t1.second > t2.second) return 1;
         if (t1.nanosecod < t2.nanosecod) return -1;
@@ -115,7 +115,7 @@ exports.setsRemovePtBlockAndPastTransactions = function (target, arr, maxPulse) 
     var toBeRemoved = [];
     for (var d in target) {
         for (var i = 0; i < arr.length; i++) {
-            if (arr[i] == d || target[d].CP < maxPulse) {
+            if (arr[i] == d || target[d].transactionPulse < maxPulse) {
                 toBeRemoved.push(d);
             }
         }

@@ -10,9 +10,6 @@ exports.createForObject = function(valueObject, thisObject, localId){
 	ret.autoInit        = function(){
 		thisObject.transaction = $$.blockchain.beginTransaction(thisObject);
 	};
-	ret.isPersisted  	= function () {
-		return thisObject.getMetadata('persisted') === true;
-	};
 	ret.commit = function(){
 		$$.blockchain.commit(thisObject.transaction);
 	}

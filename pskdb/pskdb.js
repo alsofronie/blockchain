@@ -1,5 +1,6 @@
+let CNST = require("../moduleConstants");
 
-function KeyValueDBWithVersions(){
+function KeyValueDBWithVersions(){ //main storage
     let cset        = {};  // contains all keys
     let keyVersions = {};  //will store versions
     let self = this;
@@ -12,10 +13,13 @@ function KeyValueDBWithVersions(){
         return null;
     }
 
-    this.writeKey = function (keyName, value){
+    this.writeKey = function (keyName, value, newVersion){
         if(keyVersions.hasOwnProperty(keyName)){
-            keyVersions[keyName]++;
-
+            if(!newVersion){
+                keyVersions[keyName]++;
+            } else {
+                keyVersions[keyName] = newVersion;
+            }
         } else{
             keyVersions[keyName] = 0;
         }
@@ -32,13 +36,13 @@ function KeyValueDBWithVersions(){
     this.getInternalValues = function(currentPulse){
         return {
             cset,
-            keyVersions,
+            versions:keyVersions,
             currentPulse
         }
     }
 }
 
-function TransactionKeySpaceHandler(parentStorage){
+function DBTransactionHandler(parentStorage){
     let readSetVersions  = {}; //version of a key when read first time
     let writeSet         = {};  //contains only keys modified in handlers
 
@@ -48,22 +52,23 @@ function TransactionKeySpaceHandler(parentStorage){
         }
         readSetVersions[keyName] = parentStorage.version(keyName);
         return parentStorage.readKey(keyName);
-    }
+    };
 
     this.writeKey = function (keyName, value){
         this.readKey(keyName);         //save read version
         writeSet[keyName] = value;
-    }
+    };
 
-    this.computeSwarmTransactionDiff = function(swarmForTransaction){
-        swarmForTransaction.input     = readSetVersions;
-        swarmForTransaction.output    = writeSet;
-        return swarmForTransaction;
-    }
+    this.computeSwarmTransactionDiff = function(){
+        return {
+            input     : readSetVersions,
+            output    : writeSet
+        };
+    };
 }
 
 
-function PSKDb(worldStateCache, historyStorage){
+function PSKDB(worldStateCache, historyStorage){
 
     var mainStorage = new KeyValueVersionStorage();
     var self = this;
@@ -72,7 +77,7 @@ function PSKDb(worldStateCache, historyStorage){
     var hashOfLatestCommittedBlock = "Genesis Block";
 
     this.getHandler = function(){ // the single way of working with pskdb
-        var tempStorage = new TransactionKeySpaceHandler(mainStorage);
+        var tempStorage = new DBTransactionHandler(mainStorage);
         return tempStorage;
     }
 
@@ -149,10 +154,15 @@ function PSKDb(worldStateCache, historyStorage){
         historyStorage.getLatestBlockNumber(gotLatestBlock);
     }
 
+
+
     this.commitBlock = function(block, doNotSaveHistory){
         let blockSet = block.blockset;
         currentPulse = block.pulse;
-        mainStorage.commit(blockSet);
+
+        let verificationKeySpace = new VerificationKeySpaceHandler(mainStorage, worldStateCache)
+
+        verificationKeySpace.commit(blockSet);
 
         hashOfLatestCommittedBlock = block.hash;
         if(!doNotSaveHistory){
@@ -164,15 +174,19 @@ function PSKDb(worldStateCache, historyStorage){
         worldStateCache.updateState(internalValues, $$.logError);
     }
 
+    this.computePTBlock = function(nextBlockSet){
+        var tempStorage = new DataShell(mainStorage);
+        return tempStorage.computePTBlock(nextBlockSet);
+
+    }
 }
 
 
-
-function VerificationKeySpaceHandler(parentStorage){
+function VerificationKeySpaceHandler(parentStorage, worldStateCache){
     let readSetVersions  = {}; //version of a key when read first time
     let writeSetVersions = {}; //increment version with each writeKey
-
     let writeSet         = {};  //contains only keys modified in handlers
+    let self = this;
 
     this.readKey = function (keyName){
         if(writeSetVersions.hasOwnProperty(keyName)){
@@ -190,9 +204,83 @@ function VerificationKeySpaceHandler(parentStorage){
         writeSetVersions[keyName]++;
         writeSet[keyName] = value;
     }
+
+    function applyTransaction(t){
+        let ret = true;
+        for(let k in t.input){
+            let transactionVersion = t.input[k];
+            if( transactionVersion == undefined){
+                transactionVersion = 0;
+            }
+            let currentVersion = self.getVersion(k);
+            if(currentVersion == undefined || currentVersion == null){
+                currentVersion = 0;
+            }
+            if(transactionVersion != currentVersion){
+                //console.log(k, transactionVersion , currentVersion);
+                //ret = "Failed to apply in transactionVersion != currentVersion (" + transactionVersion + "!="+ currentVersion + ")";
+                return false;
+            }
+        }
+
+        let assets = [];
+        let fastCheck = true;
+        for(let k in t.output){
+            let assetValue = JSON.parse(self.readKey(k));
+            let asset = $$.assets.continue(assetValue);
+            if(asset.securityParadigm.mainParadigm == CNST.CONSTITUTIONAL){
+                fastCheck = false;
+            }
+            assets.push(asset);
+        }
+
+        if(fastCheck){
+
+        } else {
+            //execute transaction again and see if the results are identical
+
+        }
+
+        for(let k in t.output){
+            self.writeKey(k, t.output[k]);
+        }
+        return ret;
+    }
+
+    this.computePTBlock = function(nextBlockSet){   //make a transactions block from nextBlockSet by removing invalid transactions from the key versions point of view
+        var validBlock = [];
+        var orderedByTime = cutil.orderTransactions(nextBlockSet);
+        var i = 0;
+
+        while(i < orderedByTime.length){
+            let t = orderedByTime[i];
+            if(applyTransaction(t)){
+                validBlock.push(t.digest);
+            }
+            i++;
+        }
+        return validBlock;
+    }
+
+    this.commit = function(blockSet, reportDropping){
+        let i = 0;
+        let orderedByTime = cutil.orderCRTransactions(blockSet);
+
+        while( i < orderedByTime.length ){
+            let t = orderedByTime[i];
+            if(applyTransaction(t) && reportDropping){
+                $$.log("Dropping transaction", t);
+            };
+            i++;
+        }
+
+        for(let v in writeSetVersions){
+            parentStorage.writeKey(v, writeSet[v], writeSetVersions[v]);
+        }
+    }
 }
 
 
 exports.newPSKDB = function(worldStateCache, historyStorage){
-    return new PDS(worldStateCache, historyStorage);
+    return new PSKDB(worldStateCache, historyStorage);
 }

@@ -72,7 +72,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
     this.commit = function (transaction, asCommand) {
         var swarm = transaction.getSwarm();
         var handler =  transaction.getHandler();
-        const diff = pskdb.computeSwarmTransactionDiff(swarm,handler);
+        const diff = handler.computeSwarmTransactionDiff(swarm);
         console.log("Diff is", diff.output);
         const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), asCommand, diff.input, diff.output, consensusAlgorithm.getCurrentPulse());
         consensusAlgorithm.commit(t);

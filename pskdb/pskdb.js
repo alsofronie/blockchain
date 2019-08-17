@@ -4,24 +4,64 @@ function KeyValueDBWithVersions(){
     let keyVersions = {};  //will store versions
     let self = this;
 
+    this.readKey = function (keyName){
+        if(keyVersions.hasOwnProperty(keyName)){
+            return cset[keyName];
+        }
+        keyVersions[keyName] = 0;
+        return null;
+    }
 
+    this.writeKey = function (keyName, value){
+        if(keyVersions.hasOwnProperty(keyName)){
+            keyVersions[keyName]++;
+
+        } else{
+            keyVersions[keyName] = 0;
+        }
+        cset[keyName] = value;
+    }
+
+    this.version = function(keyName){
+        if(keyVersions.hasOwnProperty(keyName)){
+            return keyVersions[keyName];
+        }
+        return 0;
+    }
+
+    this.getInternalValues = function(currentPulse){
+        return {
+            cset,
+            keyVersions,
+            currentPulse
+        }
+    }
 }
 
 function TransactionKeySpaceHandler(parentStorage){
     let readSetVersions  = {}; //version of a key when read first time
-    let writeSetVersions = {}; //increment version with each writeKey
-
     let writeSet         = {};  //contains only keys modified in handlers
 
+    this.readKey = function (keyName){
+        if(readSetVersions.hasOwnProperty(keyName)){
+            return writeSet[keyName];
+        }
+        readSetVersions[keyName] = parentStorage.version(keyName);
+        return parentStorage.readKey(keyName);
+    }
 
-    this.writeKey = function (name, value){
-        var k = this.readKey(name);
+    this.writeKey = function (keyName, value){
+        this.readKey(keyName);         //save read version
+        writeSet[keyName] = value;
+    }
 
-        cset [name] = value;
-        writeSetVersions[name]++;
-        writeSet[name] = value;
+    this.computeSwarmTransactionDiff = function(swarmForTransaction){
+        swarmForTransaction.input     = readSetVersions;
+        swarmForTransaction.output    = writeSet;
+        return swarmForTransaction;
     }
 }
+
 
 function PSKDb(worldStateCache, historyStorage){
 
@@ -119,12 +159,38 @@ function PSKDb(worldStateCache, historyStorage){
             historyStorage.appendBlock( block, false, $$.logError);
         }
 
-        let internalValues = mainStorage.getInternalValues(currentPulse, false);
+        let internalValues = mainStorage.getInternalValues(currentPulse);
         internalValues.latestBlockHash = block.hash;
         worldStateCache.updateState(internalValues, $$.logError);
     }
+
 }
 
+
+
+function VerificationKeySpaceHandler(parentStorage){
+    let readSetVersions  = {}; //version of a key when read first time
+    let writeSetVersions = {}; //increment version with each writeKey
+
+    let writeSet         = {};  //contains only keys modified in handlers
+
+    this.readKey = function (keyName){
+        if(writeSetVersions.hasOwnProperty(keyName)){
+            return writeSet[keyName];
+        }
+        readSetVersions[keyName] = parentStorage.version(keyName);
+        return parentStorage.readKey(keyName);
+    }
+
+    this.writeKey = function (keyName, value){
+        this.readKey(keyName);         //save read version
+        if(!writeSetVersions.hasOwnProperty(keyName)){
+            writeSetVersions[keyName] = readSetVersions[keyName];
+        }
+        writeSetVersions[keyName]++;
+        writeSet[keyName] = value;
+    }
+}
 
 
 exports.newPSKDB = function(worldStateCache, historyStorage){

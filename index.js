@@ -9,14 +9,13 @@ var pskcrypto = require("pskcrypto");
 function CRTransaction(swarmType, command, input, output, currentPulse) {
     this.swarmType = swarmType;
 
-    if(!command){
+    if(input && output){
         this.input      = input;
         this.output     = output;
-    } else {
-        this.command      = command;
     }
+    this.command      = command;
 
-    var arr = process.hrtime();
+    let arr = process.hrtime();
     this.second     = arr[0];
     this.nanosecod  = arr[1];
     this.transactionPulse = currentPulse;
@@ -24,17 +23,17 @@ function CRTransaction(swarmType, command, input, output, currentPulse) {
 }
 
 
-var assetUtils = require("./blockchainSwarmTypes/asset_swarm_template");
-var transactionUtils = require("./blockchainSwarmTypes/transaction_swarm_template");
+let assetUtils = require("./blockchainSwarmTypes/asset_swarm_template");
+let transactionUtils = require("./blockchainSwarmTypes/transaction_swarm_template");
 $$.assets           = callflowModule.createSwarmEngine("asset", assetUtils);
 $$.asset            = $$.assets;
 $$.transactions     = callflowModule.createSwarmEngine("transaction", transactionUtils);
 $$.transaction      = $$.transactions;
 
-var pskcryt = require("pskcrypto");
+let pskcryt = require("pskcrypto");
 
 
-module.exports = {
+exports = {
     createBlockchain:function(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot){
         return require("./pskdb").startDefaultDB(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot);
     },

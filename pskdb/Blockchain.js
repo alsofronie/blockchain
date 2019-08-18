@@ -104,11 +104,13 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
 
 
     this.startCommandAs = function(agentId, transactionSwarmType,...args){
-
+        let t = bm.createCRTransaction(transactionSwarmType, args, null, null, consensusAlgorithm.getCurrentPulse());
+        t.signatures = [this.signAs(agentId, t.digest)];
+        consensusAlgorithm.commit(t);
     }
 
     this.startTransactionAs = function(agentId, transactionSwarmType,...args){
-        var swarm = $$.transaction.start(transactionSwarmType,...args);
+        let swarm = $$.transaction.start(transactionSwarmType,...args);
         swarm.setMetadata(CNST.COMMAND_ARGS, args);
     }
 
@@ -118,6 +120,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
         const diff = handler.computeSwarmTransactionDiff(swarm);
         console.log("Diff is", diff.output);
         const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), swarm.getMetadata(CNST.COMMAND_ARGS), diff.input, diff.output, consensusAlgorithm.getCurrentPulse());
+        t.signatures = [this.signAs(agentId, t.digest)];
         consensusAlgorithm.commit(t);
     };
 }

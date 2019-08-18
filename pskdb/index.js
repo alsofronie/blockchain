@@ -6,7 +6,7 @@ module.exports = {
             require('../defaultConstitution/assets/index');
             require('../defaultConstitution/transactions/index');
         }
-        let pds = require('./obsolete/PDS').newPDS(worldStateCache, historyStorage);
+        let pds = require('./pskdb').newPSKDB(worldStateCache, historyStorage);
         consensusAlgorithm.pskdb = pds;
         return new Blockchain(pds, consensusAlgorithm, worldStateCache);
     },

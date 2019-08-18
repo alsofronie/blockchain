@@ -69,14 +69,6 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
         return new Transaction(pskdb.getHandler(), transactionSwarm, worldStateCache, SPRegistry);
     };
 
-    this.commit = function (transaction, asCommand) {
-        var swarm = transaction.getSwarm();
-        var handler =  transaction.getHandler();
-        const diff = handler.computeSwarmTransactionDiff(swarm);
-        console.log("Diff is", diff.output);
-        const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), asCommand, diff.input, diff.output, consensusAlgorithm.getCurrentPulse());
-        consensusAlgorithm.commit(t);
-    };
 
     this.start = function(reportBootingFinishedCallback){
         pskdb.initialise(reportBootingFinishedCallback);
@@ -109,6 +101,25 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
     this.registerSecurityParadigm = function(SPName, apiName, factory){
         return SPRegistry.register(SPName, apiName, factory);
     }
+
+
+    this.startCommandAs = function(agentId, transactionSwarmType,...args){
+
+    }
+
+    this.startTransactionAs = function(agentId, transactionSwarmType,...args){
+        var swarm = $$.transaction.start(transactionSwarmType,...args);
+        swarm.setMetadata(CNST.COMMAND_ARGS, args);
+    }
+
+    this.commit = function (transaction) {
+        let swarm = transaction.getSwarm();
+        let handler =  transaction.getHandler();
+        const diff = handler.computeSwarmTransactionDiff(swarm);
+        console.log("Diff is", diff.output);
+        const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), swarm.getMetadata(CNST.COMMAND_ARGS), diff.input, diff.output, consensusAlgorithm.getCurrentPulse());
+        consensusAlgorithm.commit(t);
+    };
 }
 
 function Transaction(pdsHandler, transactionSwarm, worldStateCache, SPRegistry) {

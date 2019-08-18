@@ -16,8 +16,6 @@ function mainTest(err, storageFolder) {
 
    // assert.disableCleanings(); //to debug it during development of the test
 
-
-
     var worldStateCache = bm.createWorldStateCache("fs", storageFolder);
     var historyStorage = bm.createHistoryStorage("fs", storageFolder);
     var consensusAlgorithm = bm.createConsensusAlgorithm("direct");

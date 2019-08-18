@@ -98,7 +98,7 @@ function PSKDB(worldStateCache, historyStorage){
         let gotState_done = false;
         let lbn = 0;
         let state = 0;
-        var cp = 0;
+        let cp = 0;
 
         function loadNextBlock(){
             if(cp > lbn){
@@ -181,7 +181,9 @@ function PSKDB(worldStateCache, historyStorage){
     }
 }
 
+let lec = require("../strategies/securityParadigms/localExecutionCache");
 
+    /* play the role of DBTransactionHandler (readKey, writeKey) while also doing transaction validation*/
 function VerificationKeySpaceHandler(parentStorage, worldStateCache){
     let readSetVersions  = {}; //version of a key when read first time
     let writeSetVersions = {}; //increment version with each writeKey
@@ -205,8 +207,9 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
         writeSet[keyName] = value;
     }
 
-    function applyTransaction(t){
+    function applyTransaction(t, willBeCommited){
         let ret = true;
+        lec.ensureEventTransaction(t);
         for(let k in t.input){
             let transactionVersion = t.input[k];
             if( transactionVersion == undefined){
@@ -223,34 +226,24 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
             }
         }
 
-        let assets = [];
-        let fastCheck = true;
-        for(let k in t.output){
-            let assetValue = JSON.parse(self.readKey(k));
-            let asset = $$.assets.continue(assetValue);
-            if(asset.securityParadigm.mainParadigm == CNST.CONSTITUTIONAL){
-                fastCheck = false;
-            }
-            assets.push(asset);
-        }
-
-        if(fastCheck){
-
-        } else {
-            //execute transaction again and see if the results are identical
-
+        //TODO: potential double spending bug if a transaction was replaced
+        if(!lec.verifyTransaction(t, self, willBeCommited)){
+            return false;
         }
 
         for(let k in t.output){
             self.writeKey(k, t.output[k]);
         }
+        if(willBeCommited){
+            lec.removeFromCacheAtCommit(t);
+        }
         return ret;
     }
 
     this.computePTBlock = function(nextBlockSet){   //make a transactions block from nextBlockSet by removing invalid transactions from the key versions point of view
-        var validBlock = [];
-        var orderedByTime = cutil.orderTransactions(nextBlockSet);
-        var i = 0;
+        let validBlock = [];
+        let orderedByTime = cutil.orderTransactions(nextBlockSet);
+        let i = 0;
 
         while(i < orderedByTime.length){
             let t = orderedByTime[i];
@@ -268,7 +261,7 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
 
         while( i < orderedByTime.length ){
             let t = orderedByTime[i];
-            if(applyTransaction(t) && reportDropping){
+            if(applyTransaction(t, true) && reportDropping){
                 $$.log("Dropping transaction", t);
             };
             i++;

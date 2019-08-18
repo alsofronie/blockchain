@@ -62,11 +62,14 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
     var SPRegistry = require("../strategies/securityParadigmRegistry/securityParadigmRegistry").getRegistry(this);
     let signatureProvider;
 
-    this.beginTransaction = function (transactionSwarm) {
+    this.beginTransaction = function (transactionSwarm, handler) {
         if (!transactionSwarm) {
             $$.exception("Can't begin a transaction outside of a swarm instance from transactions namespace");
         }
-        return new Transaction(pskdb.getHandler(), transactionSwarm, worldStateCache, SPRegistry);
+        if(!handler){
+            handler = pskdb.getHandler();
+        }
+        return new Transaction(handler, transactionSwarm, worldStateCache, SPRegistry);
     };
 
 

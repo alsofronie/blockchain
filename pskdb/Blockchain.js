@@ -58,9 +58,8 @@ function createLookup(pdsHandler, SPRegistry, worldStateCache){
     };
 }
 
-function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
-    var SPRegistry = require("../strategies/securityParadigmRegistry/securityParadigmRegistry").getRegistry(this);
-    let signatureProvider;
+function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvider) {
+    let spr = require("../strategies/securityParadigms/securityParadigmRegistry").getRegistry(this);
 
     this.beginTransaction = function (transactionSwarm, handler) {
         if (!transactionSwarm) {
@@ -69,7 +68,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
         if(!handler){
             handler = pskdb.getHandler();
         }
-        return new Transaction(handler, transactionSwarm, worldStateCache, SPRegistry);
+        return new Transaction(handler, transactionSwarm, worldStateCache, spr);
     };
 
 
@@ -78,31 +77,28 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
     };
 
 
-    this.lookup = createLookup(pskdb.getHandler(), SPRegistry, worldStateCache);
+    this.lookup = createLookup(pskdb.getHandler(), spr, worldStateCache);
     /*
     this.lookup = function(typeName, alias){
-        var lf = createLookup(pskdb.getHandler(), SPRegistry, worldStateCache);
+        var lf = createLookup(pskdb.getHandler(), spr, worldStateCache);
         return lf(typeName, alias);
     }*/
 
     this.getSPRegistry = function(){
-        return SPRegistry;
+        return spr;
     }
 
     this.signAs = function(agentId, msg){
-        return signatureProviderInstance.sign(agentId, msg);
+        return signatureProvider.signAs(agentId, msg);
     };
 
     this.verifySignature = function(msg, signatures){
         return signatureProvider.verify(msg, signatures);
     };
 
-    this.registerSignatureProvider = function(signatureProviderInstance){
-        signatureProvider = signatureProviderInstance;
-    };
 
     this.registerSecurityParadigm = function(SPName, apiName, factory){
-        return SPRegistry.register(SPName, apiName, factory);
+        return spr.register(SPName, apiName, factory);
     }
 
 
@@ -115,6 +111,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
     this.startTransactionAs = function(agentId, transactionSwarmType,...args){
         let swarm = $$.transaction.start(transactionSwarmType,...args);
         swarm.setMetadata(CNST.COMMAND_ARGS, args);
+        swarm.setMetadata(CNST.SIGNING_AGENT, agentId);
     }
 
     this.commit = function (transaction) {
@@ -123,12 +120,12 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache) {
         const diff = handler.computeSwarmTransactionDiff(swarm);
         console.log("Diff is", diff.output);
         const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), swarm.getMetadata(CNST.COMMAND_ARGS), diff.input, diff.output, consensusAlgorithm.getCurrentPulse());
-        t.signatures = [this.signAs(agentId, t.digest)];
+        t.signatures = [this.signAs(swarm.getMetadata(CNST.SIGNING_AGENT), t.digest)];
         consensusAlgorithm.commit(t);
     };
 }
 
-function Transaction(pdsHandler, transactionSwarm, worldStateCache, SPRegistry) {
+function Transaction(pdsHandler, transactionSwarm, worldStateCache, spr) {
 
     let self = this;
 
@@ -156,7 +153,7 @@ function Transaction(pdsHandler, transactionSwarm, worldStateCache, SPRegistry) 
         pdsHandler.writeKey(swarmTypeName + '/' + swarmId, J(serializedSwarm));
     };
 
-    this.lookup = createLookup(pdsHandler, SPRegistry, worldStateCache);
+    this.lookup = createLookup(pdsHandler, spr, worldStateCache);
 
     this.loadAssets = function (assetType) {
         assetType = $$.fixSwarmName(assetType);

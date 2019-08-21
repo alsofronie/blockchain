@@ -12,6 +12,11 @@ dc.createTestFolder(storageFolder, mainTest);
 
 assert.begin("Running folder persistence smoke test for PSK blockchain")
 
+let signatureProvider = bm.createSignatureProvider("permissive");
+
+
+
+
 function mainTest(err, storageFolder) {
 
     assert.disableCleanings(); //to debug it during development of the test
@@ -23,7 +28,8 @@ function mainTest(err, storageFolder) {
     var consensusAlgorithm = bm.createConsensusAlgorithm("direct");
 
 
-    bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm);
+
+    bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, false, false, signatureProvider);
 
     const agentAlias = "Smoky";
 
@@ -32,7 +38,7 @@ function mainTest(err, storageFolder) {
         var worldStateCache = bm.createWorldStateCache("none");
         var historyStorage = bm.createHistoryStorage("fs", storageFolder);
         var consensusAlgorithm = bm.createConsensusAlgorithm("direct");
-        bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, false, true);
+        bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, false, true, signatureProvider);
         $$.blockchain.start(function (err, res) {
          //   $$.transactions.start("Constitution", "addAgent", agentAlias+"xxx", "withoutPK");
             var agent = $$.blockchain.lookup("Agent", "superMan");

@@ -16,11 +16,11 @@ function Pulse(signer, currentPulseNumber, block, newTransactions, vsd, top, las
 }
 
 
-exports.createPulse = function (signer, currentPulseNumber, block, newTransactions, vsd, top, last) {
+module.exports.createPulse = function (signer, currentPulseNumber, block, newTransactions, vsd, top, last) {
     return new Pulse(signer, currentPulseNumber, block, newTransactions, vsd, top, last);
 }
 
-exports.orderCRTransactions = function (pset) { //order in place the pset array
+module.exports.orderCRTransactions = function (pset) { //order in place the pset array
     var arr = [];
     for (var d in pset) {
         arr.push(pset[d]);

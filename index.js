@@ -33,9 +33,9 @@ $$.transaction      = $$.transactions;
 let pskcryt = require("pskcrypto");
 
 
-exports = {
-    createBlockchain:function(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot){
-        return require("./pskdb").startDefaultDB(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot);
+module.exports = {
+    createBlockchain:function(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot, signatureProvider){
+        return require("./pskdb").startDefaultDB(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot, signatureProvider);
     },
     createHistoryStorage:function(storageType,...args){
         return require("./strategies/historyStorages").createStorage(storageType,...args);
@@ -55,8 +55,8 @@ exports = {
         return block;
 
     },
-    createSignatureProvider:function(){
-        return require("./strategies/consensusAlgortims").createSignatureProvider(name,...args);
+    createSignatureProvider:function(name,...args){
+        return require("./strategies/signatureProvidersRegistry/signatureProvidersRegistry").createSignatureProvider(name,...args);
     }
 }
 

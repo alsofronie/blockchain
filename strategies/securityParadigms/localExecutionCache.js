@@ -10,7 +10,7 @@ function sandBoxedExecution(cet){
     $$.transactions.start("")
 }
 
-exports = {
+module.exports = {
     ensureEventTransaction:function(cetransaction){
 
         return cetransaction;
@@ -19,12 +19,18 @@ exports = {
         let assets = [];
         let fastCheck = true;
         for(let k in t.output){
-            let assetValue = JSON.parse(self.readKey(k));
-            let asset = $$.assets.continue(assetValue);
-            if(asset.securityParadigm.mainParadigm == CNST.CONSTITUTIONAL){
-                fastCheck = false;
+            let  value = handler.readKey(k);
+            console.log("Value for key",k, value)
+            if(value === undefined){
+
+            } else {
+                let assetValue = JSON.parse(value);
+                let asset = $$.assets.continue(assetValue);
+                if(asset.securityParadigm.mainParadigm == CNST.CONSTITUTIONAL){
+                    fastCheck = false;
+                }
+                assets.push(asset);
             }
-            assets.push(asset);
         }
 
         if(fastCheck){

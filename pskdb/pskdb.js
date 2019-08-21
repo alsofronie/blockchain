@@ -1,4 +1,7 @@
 let CNST = require("../moduleConstants");
+var cutil   = require("../signsensus/consUtil");
+//var ssutil  = require("pskcrypto");
+
 
 function KeyValueDBWithVersions(){ //main storage
     let cset        = {};  // contains all keys
@@ -70,7 +73,7 @@ function DBTransactionHandler(parentStorage){
 
 function PSKDB(worldStateCache, historyStorage){
 
-    var mainStorage = new KeyValueVersionStorage();
+    var mainStorage = new KeyValueDBWithVersions();
     var self = this;
 
     var currentPulse = 0;
@@ -207,6 +210,13 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
         writeSet[keyName] = value;
     }
 
+    this.version = function(keyName){
+        if(writeSetVersions.hasOwnProperty(keyName)){
+            return writeSetVersions[keyName];
+        }
+        return parentStorage.version(keyName);
+    }
+
     function applyTransaction(t, willBeCommited){
         let ret = true;
         lec.ensureEventTransaction(t);
@@ -215,7 +225,7 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
             if( transactionVersion == undefined){
                 transactionVersion = 0;
             }
-            let currentVersion = self.getVersion(k);
+            let currentVersion = self.version(k);
             if(currentVersion == undefined || currentVersion == null){
                 currentVersion = 0;
             }

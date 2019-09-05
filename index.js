@@ -34,8 +34,8 @@ let pskcryt = require("pskcrypto");
 
 
 module.exports = {
-    createBlockchain:function(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot, signatureProvider){
-        return require("./pskdb").startDefaultDB(worldStateCache, historyStorage, algorithm, loadDefaultConstitution, forcedBoot, signatureProvider);
+    createBlockchain:function(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider, loadDefaultConstitution, forcedBoot){
+        return require("./pskdb").startDefaultDB(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider, loadDefaultConstitution, forcedBoot);
     },
     createHistoryStorage:function(storageType,...args){
         return require("./strategies/historyStorages").createStorage(storageType,...args);

@@ -19,9 +19,10 @@ function mainTest(err, storageFolder) {
     var worldStateCache = bm.createWorldStateCache("fs", storageFolder);
     var historyStorage = bm.createHistoryStorage("fs", storageFolder);
     var consensusAlgorithm = bm.createConsensusAlgorithm("direct");
+    let signatureProvider  =  bm.createSignatureProvider("permissive");
 
 
-    bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm);
+    bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider);
 
     const agentAlias = "Smoky";
 
@@ -30,7 +31,7 @@ function mainTest(err, storageFolder) {
         var worldStateCache = bm.createWorldStateCache("fs", storageFolder);
         var historyStorage = bm.createHistoryStorage("fs", storageFolder);
         var consensusAlgorithm = bm.createConsensusAlgorithm("direct");
-        bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, false, true);
+        bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm,signatureProvider, false, true);
         $$.blockchain.start(function (err, res) {
             var agent = $$.blockchain.lookup("Agent", agentAlias);
             $$.fixMe("If we uncomment the next line,it fails. investigate and fix this!");
@@ -44,7 +45,7 @@ function mainTest(err, storageFolder) {
         var worldStateCache = bm.createWorldStateCache("none");
         var historyStorage = bm.createHistoryStorage("fs", storageFolder);
         var consensusAlgorithm = bm.createConsensusAlgorithm("direct");
-        bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, false, true);
+        bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider,false, true);
         $$.blockchain.start(function (err, res) {
 
             $$.transactions.start("Constitution", "addAgent", agentAlias+"WithoutC", "withoutPK");

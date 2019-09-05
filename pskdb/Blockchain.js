@@ -60,7 +60,8 @@ function createLookup(pdsHandler, SPRegistry, worldStateCache){
 
 function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvider) {
     let spr = require("../strategies/securityParadigms/securityParadigmRegistry").getRegistry(this);
-
+    let self = this;
+    console.log(signatureProvider)
     this.beginTransaction = function (transactionSwarm, handler) {
         if (!transactionSwarm) {
             $$.exception("Can't begin a transaction outside of a swarm instance from transactions namespace");
@@ -120,7 +121,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
         const diff = handler.computeSwarmTransactionDiff(swarm);
         console.log("Diff is", diff.output);
         const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), swarm.getMetadata(CNST.COMMAND_ARGS), diff.input, diff.output, consensusAlgorithm.getCurrentPulse());
-        t.signatures = [this.signAs(swarm.getMetadata(CNST.SIGNING_AGENT), t.digest)];
+        t.signatures = [self.signAs(swarm.getMetadata(CNST.SIGNING_AGENT), t.digest)];
         consensusAlgorithm.commit(t);
     };
 }

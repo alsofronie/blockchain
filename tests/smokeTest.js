@@ -1,9 +1,10 @@
-require('../../../psknode/bundles/pskruntime');
+
 //require('../../../../builds/devel/psknode');
-var assert = require('double-check').assert;
+var assert = require('../../double-check').assert;
+require('../../../psknode/bundles/pskruntime');
 var bm = require('../index');
 
-require('testUtil/simplestConstitution');
+require('./testUtil/simplestConstitution');
 /*
 var tu = require('testUtil');
 const storageFolder = "./storageFolder";
@@ -11,12 +12,14 @@ tu.deleteFolderRecursive(storageFolder); */
 
 
 
-var worldStateCache     =  bm.createWorldStateCache("memory");
-var historyStorage      =  bm.createHistoryStorage("memory");
-var consensusAlgorithm  =  bm.createConsensusAlgorithm("direct");
+let  worldStateCache     =  bm.createWorldStateCache("memory");
+let  historyStorage      =  bm.createHistoryStorage("memory");
+let consensusAlgorithm  =  bm.createConsensusAlgorithm("direct");
+let signatureProvider  =  bm.createSignatureProvider("permissive");
 
 
-bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm);
+bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider);
+
 
 const agentAlias = "Smoky";
 assert.begin("Running simple smoke test for PSK blockchain ")

@@ -8,6 +8,10 @@ function KeyValueDBWithVersions(){ //main storage
     let keyVersions = {};  //will store versions
     let self = this;
 
+    this.dump = function(){
+        console.log("Main Storage", {keyVersions,cset})
+    }
+
     this.readKey = function (keyName){
         if(keyVersions.hasOwnProperty(keyName)){
             return cset[keyName];
@@ -17,6 +21,7 @@ function KeyValueDBWithVersions(){ //main storage
     }
 
     this.writeKey = function (keyName, value, newVersion){
+
         if(keyVersions.hasOwnProperty(keyName)){
             if(!newVersion){
                 keyVersions[keyName]++;
@@ -49,12 +54,31 @@ function DBTransactionHandler(parentStorage){
     let readSetVersions  = {}; //version of a key when read first time
     let writeSet         = {};  //contains only keys modified in handlers
 
-    this.readKey = function (keyName){
-        if(readSetVersions.hasOwnProperty(keyName)){
-            return writeSet[keyName];
+    this.dump = function(){
+        console.log("DBTransactionHandler:", {readSetVersions,writeSet});
+        parentStorage.dump();
+    }
+
+    this.readKey = function (keyName, shouldFindAValue){
+        function internalReadKey(){
+            if(readSetVersions.hasOwnProperty(keyName)){
+                return writeSet[keyName];
+            }
+            readSetVersions[keyName] = parentStorage.version(keyName);
+            return parentStorage.readKey(keyName);
         }
-        readSetVersions[keyName] = parentStorage.version(keyName);
-        return parentStorage.readKey(keyName);
+
+        let result = internalReadKey();
+        writeSet[keyName] = result;
+        if(shouldFindAValue){
+            console.log("Looking for ", keyName, " Version:", parentStorage.version(keyName), "Result:", result);
+        }
+        if(!result && shouldFindAValue){
+            console.error("Found nothing for", keyName, "Key Version:", parentStorage.version(keyName));
+            this.dump();
+            $$.exception("Mandatory key not found");
+        }
+        return result;
     };
 
     this.writeKey = function (keyName, value){
@@ -192,6 +216,12 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
     let writeSetVersions = {}; //increment version with each writeKey
     let writeSet         = {};  //contains only keys modified in handlers
     let self = this;
+
+    this.dump = function(){
+        console.log("VerificationKeySpaceHandler:", {readSetVersions,writeSetVersions,writeSet});
+        parentStorage.dump();
+    }
+
 
     this.readKey = function (keyName){
         if(writeSetVersions.hasOwnProperty(keyName)){

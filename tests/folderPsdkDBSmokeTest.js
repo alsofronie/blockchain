@@ -1,11 +1,12 @@
+let dc = require('../../double-check');
+
 require('../../../psknode/bundles/pskruntime');
 //require('../../../../builds/devel/psknode');
-let dc = require('double-check');
+
 var assert = dc.assert;
 var bm = require('../index');
 require('./testUtil/simplestConstitution');
 
-var tu = require('testUtil');
 const storageFolder = "./__storageFolder";
 
 dc.createTestFolder(storageFolder, mainTest);
@@ -26,12 +27,10 @@ function mainTest(err, storageFolder) {
     let consensusAlgorithm = bm.createConsensusAlgorithm("direct");
     let signatureProvider  =  bm.createSignatureProvider("permissive");
 
-    bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider);
-
-
     bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider, false, false);
 
     const agentAlias = "Smoky";
+    const agentAlias0 = "Smoky0";
 
 
     function restartBlockchainWithoutCache(done) {
@@ -40,9 +39,9 @@ function mainTest(err, storageFolder) {
         var consensusAlgorithm = bm.createConsensusAlgorithm("direct");
         bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm,signatureProvider, false, true);
         $$.blockchain.start(function (err, res) {
-         //   $$.transactions.start("Constitution", "addAgent", agentAlias+"xxx", "withoutPK");
-            var agent = $$.blockchain.lookup("Agent", "superMan");
-            assert.equal(agent.publicKey, "superMan_fakePK");
+            $$.transactions.start("Constitution", "addAgent", agentAlias+"xxx", "XXXPublicKey");
+            let agent = $$.blockchain.lookup("Agent", "superMan");
+            assert.equal(agent.publicKey, "supermanPublicKey");
             done();
         })
     }
@@ -50,15 +49,16 @@ function mainTest(err, storageFolder) {
     assert.callback("PK values should be persisted", function (done) {
         $$.blockchain.start(function (err) {
             assert.isNull(err);
-            $$.transactions.start("Constitution", "addAgent", "superMan", "withoutPK");
-            $$.transactions.start("Constitution", "updatePublicKey", "superMan", "superMan_fakePK");
+            $$.transactions.start("Constitution", "addAgent", agentAlias0, "Smoky0PublicKey");
+            $$.transactions.start("Constitution", "addAgent", "superMan", "fakeSmokyPublicKey");
+            $$.transactions.start("Constitution", "updatePublicKey", "superMan", "supermanPublicKey");
+            let  agent = $$.blockchain.lookup("Agent", "superMan");
 
-            var agent = $$.blockchain.lookup("Agent", "superMan");
+            assert.equal(agent.publicKey, "supermanPublicKey");
+            $$.transactions.start("Constitution", "addAgent", agentAlias, "SmokyPublicKey");
 
-            assert.equal(agent.publicKey, "superMan_fakePK");
-          //  $$.transactions.start("Constitution", "addAgent", agentAlias, "withoutPK");
-
-            restartBlockchainWithoutCache(done);
+            return done();
+           restartBlockchainWithoutCache(done);
         });
     })
 }

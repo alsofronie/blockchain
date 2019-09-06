@@ -17,15 +17,16 @@ $$.asset.describe("Agent", {
 
 $$.transaction.describe("Constitution", {
     addAgent: function (alias, publicKey) {
-        var agent = $$.asset.start("Agent", "init", alias, publicKey);
-        console.log("addAgent:", agent.alias,  agent.publicKey);
+        console.log("Adding Agent:", alias,  publicKey);
+        let agent = $$.asset.start("Agent", "init", alias, publicKey);
         this.transaction.add(agent);
         this.commit();
     },
     updatePublicKey: function (alias, publicKey) {
-        var agent = $$.blockchain.lookup("Agent", alias);
+        let agent = $$.blockchain.lookup("Agent", alias);
         agent.publicKey = publicKey;
         this.transaction.add(agent);
         this.transaction.commit();
+        console.log("Updating Agent:", alias,  "PublicKey:", publicKey);
     }
 })

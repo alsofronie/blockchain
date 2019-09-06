@@ -11,11 +11,10 @@ const storageFolder = "./storageFolder";
 tu.deleteFolderRecursive(storageFolder); */
 
 
-
-let  worldStateCache     =  bm.createWorldStateCache("memory");
-let  historyStorage      =  bm.createHistoryStorage("memory");
+let  worldStateCache    =  bm.createWorldStateCache("memory");
+let  historyStorage     =  bm.createHistoryStorage("memory");
 let consensusAlgorithm  =  bm.createConsensusAlgorithm("direct");
-let signatureProvider  =  bm.createSignatureProvider("permissive");
+let signatureProvider   =  bm.createSignatureProvider("permissive");
 
 
 bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider);
@@ -27,9 +26,9 @@ assert.begin("Running simple smoke test for PSK blockchain ")
 assert.callback("PK values should be persisted", function(done){
     $$.blockchain.start(function(err, res){
         assert.isNull(err);
-        $$.transactions.start("Constitution", "addAgent",agentAlias, "withoutPK");
-        var agent = $$.blockchain.lookup("Agent", agentAlias);
-        assert.equal(agent.publicKey,"withoutPK");
+        $$.transactions.start("Constitution", "addAgent",agentAlias, "PublicKey");
+        let agent = $$.blockchain.lookup("Agent", agentAlias);
+        assert.equal(agent.publicKey,"PublicKey");
         done();
     });
 })

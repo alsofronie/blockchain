@@ -1,5 +1,4 @@
 const sharedPhases = require('./sharedPhases');
-const beesHealer = require('swarmutils').beesHealer;
 
 $$.swarms.describe("agents", {
     add: function (alias, publicKey) {

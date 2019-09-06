@@ -45,10 +45,10 @@ function createLookup(pdsHandler, SPRegistry, worldStateCache){
             localUid = aliasIndex.getUid(aid) || aid;
         }
 
-        const value = pdsHandler.readKey(assetType + '/' + localUid);
+        const value = pdsHandler.readKey(assetType + '/' + localUid, true);
 
         if (!value) {
-            $$.log("Lookup fail, asset not found: ",assetType, " with alias", aid);
+            $$.log("Lookup fail, asset not found: ",assetType, " with alias", aid, value);
             //return $$.asset.start(assetType);
             return null;
         } else {
@@ -78,16 +78,14 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
     };
 
 
-    this.lookup = createLookup(pskdb.getHandler(), spr, worldStateCache);
-    /*
-    this.lookup = function(typeName, alias){
-        var lf = createLookup(pskdb.getHandler(), spr, worldStateCache);
-        return lf(typeName, alias);
-    }*/
+    this.lookup = function(assetType, aid){
+        let newLookup = createLookup(pskdb.getHandler(), spr, worldStateCache);
+        return newLookup(assetType, aid);
+    };
 
     this.getSPRegistry = function(){
         return spr;
-    }
+    };
 
     this.signAs = function(agentId, msg){
         return signatureProvider.signAs(agentId, msg);
@@ -119,7 +117,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
         let swarm = transaction.getSwarm();
         let handler =  transaction.getHandler();
         const diff = handler.computeSwarmTransactionDiff(swarm);
-        console.log("Diff is", diff.output);
+        //console.log("Diff is", diff.output);
         const  t = bm.createCRTransaction(swarm.getMetadata("swarmTypeName"), swarm.getMetadata(CNST.COMMAND_ARGS), diff.input, diff.output, consensusAlgorithm.getCurrentPulse());
         t.signatures = [self.signAs(swarm.getMetadata(CNST.SIGNING_AGENT), t.digest)];
         consensusAlgorithm.commit(t);
@@ -139,7 +137,6 @@ function Transaction(pdsHandler, transactionSwarm, worldStateCache, spr) {
     };
 
     this.add = function (asset) {
-        console.log("Adding asset", asset.publicKey);
         const swarmTypeName = asset.getMetadata('swarmTypeName');
         const swarmId = asset.getMetadata('swarmId');
 
@@ -150,7 +147,6 @@ function Transaction(pdsHandler, transactionSwarm, worldStateCache, spr) {
 
 
         const serializedSwarm = beesHealer.asJSON(asset, null, null);
-
         pdsHandler.writeKey(swarmTypeName + '/' + swarmId, J(serializedSwarm));
     };
 

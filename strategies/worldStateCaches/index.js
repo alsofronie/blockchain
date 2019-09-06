@@ -4,8 +4,8 @@ function StorageContainer(){
     this.pskdb = {};
     this.keys = {};
     this.pulse = 0;
-    var self = this;
-    var latestState = {
+    let self = this;
+    let latestState = {
 
     };
 
@@ -19,13 +19,13 @@ function StorageContainer(){
 }
 
 function LocalWSCache(folder) {
-    var storage = new StorageContainer();
+    let storage = new StorageContainer();
 
     this.readKey = storage.readKey;
     this.writeKey = storage.writeKey;
 
     const worldStateCachePath = folder + "/worldSateCache";
-    var fs = require("fs");
+    let fs = require("fs");
 
     this.getState = function (callback) {
         fs.readFile(worldStateCachePath, function (err, res) {
@@ -47,23 +47,31 @@ function LocalWSCache(folder) {
         storage.pskdb = internalValues;
         fs.writeFile(worldStateCachePath, JSON.stringify(storage, null, 1), callback);
     }
+
+    this.dump = function(){
+        console.log("LocalWSCache:", storage);
+    }
 }
 
 function MemoryCache() {
-    var storage = new StorageContainer();
+    let storage = new StorageContainer();
 
     this.readKey = storage.readKey;
     this.writeKey = storage.writeKey;
 
     this.getState = function (callback) { //err, valuesFromCache
         callback(null, storage.pskdb);
-    }
+    };
 
     this.updateState = function (internalValues, callback) {
         console.info("Commiting state in memory cache "/*, internalValues*/)
         storage.pskdb = internalValues;
         storage.pulse = internalValues.pulse;
         callback(null, storage.pskdb);
+    };
+
+    this.dump = function(){
+        console.log("MemoryCache:", storage);
     }
 }
 

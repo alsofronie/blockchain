@@ -49,6 +49,7 @@ function createLookup(pdsHandler, SPRegistry, worldStateCache){
 
         if (!value) {
             $$.log("Lookup fail, asset not found: ",assetType, " with alias", aid, value);
+            pdsHandler.dump();
             //return $$.asset.start(assetType);
             return null;
         } else {
@@ -61,7 +62,6 @@ function createLookup(pdsHandler, SPRegistry, worldStateCache){
 function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvider) {
     let spr = require("../strategies/securityParadigms/securityParadigmRegistry").getRegistry(this);
     let self = this;
-    console.log(signatureProvider)
     this.beginTransaction = function (transactionSwarm, handler) {
         if (!transactionSwarm) {
             $$.exception("Can't begin a transaction outside of a swarm instance from transactions namespace");
@@ -122,6 +122,10 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
         t.signatures = [self.signAs(swarm.getMetadata(CNST.SIGNING_AGENT), t.digest)];
         consensusAlgorithm.commit(t);
     };
+
+    this.dump = function(){
+        pskdb.getHandler().dump();
+    }
 }
 
 function Transaction(pdsHandler, transactionSwarm, worldStateCache, spr) {

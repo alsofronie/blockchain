@@ -34,10 +34,10 @@ function mainTest(err, storageFolder) {
 
 
     function restartBlockchainWithoutCache(done) {
-        var worldStateCache = bm.createWorldStateCache("none");
-        var historyStorage = bm.createHistoryStorage("fs", storageFolder);
-        var consensusAlgorithm = bm.createConsensusAlgorithm("direct");
-        bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm,signatureProvider, false, true);
+        let worldStateCache = bm.createWorldStateCache("none");
+        let historyStorage = bm.createHistoryStorage("fs", storageFolder);
+
+        bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider, false, true);
         $$.blockchain.start(function (err, res) {
             $$.transactions.start("Constitution", "addAgent", agentAlias+"xxx", "XXXPublicKey");
             let agent = $$.blockchain.lookup("Agent", "superMan");
@@ -57,7 +57,8 @@ function mainTest(err, storageFolder) {
             assert.equal(agent.publicKey, "supermanPublicKey");
             $$.transactions.start("Constitution", "addAgent", agentAlias, "SmokyPublicKey");
 
-            return done();
+            $$.blockchain.dump();
+            //return done();
            restartBlockchainWithoutCache(done);
         });
     })

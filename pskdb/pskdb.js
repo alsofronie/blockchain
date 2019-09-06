@@ -3,21 +3,24 @@ var cutil   = require("../signsensus/consUtil");
 //var ssutil  = require("pskcrypto");
 
 
-function KeyValueDBWithVersions(){ //main storage
+function KeyValueDBWithVersions(worldStateCache){ //main storage
     let cset        = {};  // contains all keys
     let keyVersions = {};  //will store versions
     let self = this;
 
     this.dump = function(){
-        console.log("Main Storage", {keyVersions,cset})
+        //console.log("Main Storage", {keyVersions,cset})
+        worldStateCache.dump();
     }
 
-    this.readKey = function (keyName){
+    this.readKey = function (keyName, mandatoryToExist){
         if(keyVersions.hasOwnProperty(keyName)){
             return cset[keyName];
         }
-        keyVersions[keyName] = 0;
-        return null;
+        if(mandatoryToExist){
+            keyVersions[keyName] = 0;
+        }
+        return undefined;
     }
 
     this.writeKey = function (keyName, value, newVersion){
@@ -38,7 +41,7 @@ function KeyValueDBWithVersions(){ //main storage
         if(keyVersions.hasOwnProperty(keyName)){
             return keyVersions[keyName];
         }
-        return 0;
+        return undefined;
     }
 
     this.getInternalValues = function(currentPulse){
@@ -59,25 +62,29 @@ function DBTransactionHandler(parentStorage){
         parentStorage.dump();
     }
 
-    this.readKey = function (keyName, shouldFindAValue){
+    this.readKey = function (keyName, mandatoryToExist){
         function internalReadKey(){
             if(readSetVersions.hasOwnProperty(keyName)){
                 return writeSet[keyName];
             }
-            readSetVersions[keyName] = parentStorage.version(keyName);
+            let version = parentStorage.version(keyName);
+            if(version != undefined){
+                readSetVersions[keyName] = version;
+            }
             return parentStorage.readKey(keyName);
         }
 
         let result = internalReadKey();
         writeSet[keyName] = result;
-        if(shouldFindAValue){
-            console.log("Looking for ", keyName, " Version:", parentStorage.version(keyName), "Result:", result);
+        /*
+        if(mandatoryToExist){
+            console.debug("Looking for ", keyName, " Version:", parentStorage.version(keyName), "Result:", result);
         }
-        if(!result && shouldFindAValue){
+        if(!result && mandatoryToExist){
             console.error("Found nothing for", keyName, "Key Version:", parentStorage.version(keyName));
             this.dump();
-            $$.exception("Mandatory key not found");
-        }
+            $$.exception("Mandatory key not found:" + keyName);
+        }*/
         return result;
     };
 
@@ -97,7 +104,7 @@ function DBTransactionHandler(parentStorage){
 
 function PSKDB(worldStateCache, historyStorage){
 
-    var mainStorage = new KeyValueDBWithVersions();
+    var mainStorage = new KeyValueDBWithVersions(worldStateCache);
     var self = this;
 
     var currentPulse = 0;

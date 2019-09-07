@@ -38,13 +38,13 @@ module.exports = {
         return require("./pskdb").startDefaultDB(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider, loadDefaultConstitution, forcedBoot);
     },
     createHistoryStorage:function(storageType,...args){
-        return require("./strategies/historyStorages").createStorage(storageType,...args);
+        return require("./strategies/historyStorages/historyStoragesRegistry").createStorage(storageType,...args);
     },
     createWorldStateCache:function(storageType,...args){
-        return require("./strategies/worldStateCaches").createCache(storageType,...args);
+        return require("./strategies/worldStateCaches/worldStateCacheRegistry").createCache(storageType,...args);
     },
     createConsensusAlgorithm:function(name,...args){
-        return require("./strategies/consensusAlgortims").createAlgorithm(name,...args);
+        return require("./strategies/consensusAlgortims/consensusAlgoritmsRegistry").createAlgorithm(name,...args);
     },
     createCRTransaction:function (swarmType, command, input, output, currentPulse) {
         return new CRTransaction(swarmType, command, input, output, currentPulse);

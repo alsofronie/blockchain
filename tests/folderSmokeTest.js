@@ -3,7 +3,7 @@ require('../../../psknode/bundles/pskruntime');
 let dc = require('double-check');
 var assert = dc.assert;
 var bm = require('../index');
-require('testUtil/simplestConstitution');
+require('./testUtil/simplestConstitution');
 
 var tu = require('testUtil');
 const storageFolder = "./__storageFolder";

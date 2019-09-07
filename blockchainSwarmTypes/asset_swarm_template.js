@@ -22,5 +22,15 @@ exports.createForObject = function(valueObject, thisObject, localId){
 			}
 		}
 	};
+
+	ret.getSwarmId = function(){
+		return 	thisObject.getMetadata(CNST.SWARMID);
+	}
+
+	ret.getSwarmType = function(){
+		return 	thisObject.getMetadata(CNST.SWARMTYPE);
+	}
+
+
 	return ret;
 };

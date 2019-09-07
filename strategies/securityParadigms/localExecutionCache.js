@@ -15,8 +15,8 @@ module.exports = {
         return cetransaction;
     },
     verifyTransaction:function(t, handler, forceDeepVerification){
-        return true;
-        let assets = {};
+        let old_assets = {};
+        let new_assets = {};
         let fastCheck = true;
 
         if(!forceDeepVerification){
@@ -25,20 +25,32 @@ module.exports = {
         }
 
         for(let k in t.output){
-            let  value = handler.readKey(k);
-            console.log("Value for key",k, value)
-            if(value === undefined){
-                    /* new asset (did not exist before current transaction)*/
+            new_assets[k] = {};
+            old_assets[k] = {};
 
-            } else {
-                let assetValue = JSON.parse(value);
+            let  old_value = handler.readKey(k);
+            let  new_value = t.output[k];
+
+            let assetValue = JSON.parse(new_value);
+
+            let asset = $$.assets.continue(assetValue);
+
+            new_assets[k][asset.getSwarmId()] = asset;
+            handler.saveAlias(asset.getSwarmType(), asset.alias, asset.getSwarmId());
+
+            if(old_value !== undefined){
+                /* undefined for new asset (did not exist before current transaction)*/
+                let assetValue = JSON.parse(old_value);
                 let asset = $$.assets.continue(assetValue);
                 if(asset.securityParadigm.mainParadigm == CNST.CONSTITUTIONAL){
                     fastCheck = false;
                 }
-                assets[k].push(asset);
+                old_assets[k][asset.getSwarmId()] = asset;;
             }
+            //else ... force constitutional checks?
         }
+
+        return true; //TODO: implement proper checks
 
         if(fastCheck){
             //check the signatures or other rules specified in security paradigms

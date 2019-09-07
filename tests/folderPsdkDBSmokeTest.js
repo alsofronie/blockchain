@@ -56,9 +56,7 @@ function mainTest(err, storageFolder) {
 
             assert.equal(agent.publicKey, "supermanPublicKey");
             $$.transactions.start("Constitution", "addAgent", agentAlias, "SmokyPublicKey");
-
-            $$.blockchain.dump();
-            //return done();
+            //$$.blockchain.dump();
            restartBlockchainWithoutCache(done);
         });
     })

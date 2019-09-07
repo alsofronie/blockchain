@@ -1,4 +1,4 @@
-
+const mc = require("../../moduleConstants");
 
 function StorageContainer(){
     this.pskdb = {};
@@ -16,13 +16,32 @@ function StorageContainer(){
     this.writeKey = function(key, value){
         self.keys[key] = value;
     }
+
+    function updateAlias(assetType, alias,swarmId){
+        let keyName = assetType + mc.ALIASES;
+        let value = self.readKey(keyName);
+        if(value === undefined){
+            value = {};
+            value[alias] = swarmId;
+        } else {
+            value = JSON.parse(value);
+            value[alias] = swarmId;
+        }
+        self.writeKey(keyName,JSON.stringify(value));
+    }
+
+    this.updateAliases = function(aliases){
+        for(let swarmId in aliases){
+            updateAlias(aliases[swarmId].assetType, aliases[swarmId].alias, swarmId);
+        }
+    }
 }
 
 function LocalWSCache(folder) {
     let storage = new StorageContainer();
-
     this.readKey = storage.readKey;
     this.writeKey = storage.writeKey;
+    this.updateAliases = storage.updateAliases;
 
     const worldStateCachePath = folder + "/worldSateCache";
     let fs = require("fs");
@@ -51,13 +70,14 @@ function LocalWSCache(folder) {
     this.dump = function(){
         console.log("LocalWSCache:", storage);
     }
+
 }
 
 function MemoryCache() {
     let storage = new StorageContainer();
-
     this.readKey = storage.readKey;
     this.writeKey = storage.writeKey;
+    this.updateAliases = storage.updateAliases;
 
     this.getState = function (callback) { //err, valuesFromCache
         callback(null, storage.pskdb);

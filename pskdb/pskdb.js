@@ -104,14 +104,14 @@ function DBTransactionHandler(parentStorage){
 
 function PSKDB(worldStateCache, historyStorage){
 
-    var mainStorage = new KeyValueDBWithVersions(worldStateCache);
-    var self = this;
+    let mainStorage = new KeyValueDBWithVersions(worldStateCache);
+    let self = this;
 
-    var currentPulse = 0;
-    var hashOfLatestCommittedBlock = "Genesis Block";
+    let currentPulse = 0;
+    let hashOfLatestCommittedBlock = "Genesis Block";
 
     this.getHandler = function(){ // the single way of working with pskdb
-        var tempStorage = new DBTransactionHandler(mainStorage);
+        let tempStorage = new DBTransactionHandler(mainStorage);
         return tempStorage;
     }
 
@@ -152,7 +152,7 @@ function PSKDB(worldStateCache, historyStorage){
             }
         }
 
-        function tryToBoot(){
+        function loadMissingBlocksFromHistory(){
             if(gotState_done &&  gotLatestBlock_done){
                 if(state && state.pulse){
                     cp = state.pulse;
@@ -170,8 +170,9 @@ function PSKDB(worldStateCache, historyStorage){
             if(!err){
                 lbn = val;
             }
-            tryToBoot();
+            loadMissingBlocksFromHistory();
         }
+
         function gotState(err, val){
             gotState_done = true;
 
@@ -181,7 +182,7 @@ function PSKDB(worldStateCache, historyStorage){
             if(state.latestBlockHash){
                 hashOfLatestCommittedBlock = state.latestBlockHash;
             }
-            tryToBoot();
+            loadMissingBlocksFromHistory();
         }
 
         worldStateCache.getState(gotState);
@@ -224,6 +225,8 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
     let writeSet         = {};  //contains only keys modified in handlers
     let self = this;
 
+    let aliases = {};
+
     this.dump = function(){
         console.log("VerificationKeySpaceHandler:", {readSetVersions,writeSetVersions,writeSet});
         parentStorage.dump();
@@ -236,6 +239,10 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
         }
         readSetVersions[keyName] = parentStorage.version(keyName);
         return parentStorage.readKey(keyName);
+    }
+
+    this.saveAlias = function(assetType, alias, swarmId){
+        aliases[swarmId] = {assetType, alias};
     }
 
     this.writeKey = function (keyName, value){
@@ -281,9 +288,11 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
         for(let k in t.output){
             self.writeKey(k, t.output[k]);
         }
+
+        /* who has this responsability?
         if(willBeCommited){
             lec.removeFromCacheAtCommit(t);
-        }
+        }*/
         return ret;
     }
 
@@ -317,6 +326,8 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
         for(let v in writeSetVersions){
             parentStorage.writeKey(v, writeSet[v], writeSetVersions[v]);
         }
+
+        worldStateCache.updateAliases(aliases);
     }
 }
 

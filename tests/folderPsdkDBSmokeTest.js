@@ -39,7 +39,7 @@ function mainTest(err, storageFolder) {
 
         bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider, false, true);
         $$.blockchain.start(function (err, res) {
-            $$.transactions.start("Constitution", "addAgent", agentAlias+"xxx", "XXXPublicKey");
+            $$.blockchain.startTransactionAs("secretAgent","Constitution", "addAgent", agentAlias+"xxx", "XXXPublicKey");
             let agent = $$.blockchain.lookup("Agent", "superMan");
             assert.equal(agent.publicKey, "supermanPublicKey");
             done();
@@ -49,13 +49,13 @@ function mainTest(err, storageFolder) {
     assert.callback("PK values should be persisted", function (done) {
         $$.blockchain.start(function (err) {
             assert.isNull(err);
-            $$.transactions.start("Constitution", "addAgent", agentAlias0, "Smoky0PublicKey");
-            $$.transactions.start("Constitution", "addAgent", "superMan", "fakeSmokyPublicKey");
-            $$.transactions.start("Constitution", "updatePublicKey", "superMan", "supermanPublicKey");
+            $$.blockchain.startTransactionAs("secretAgent","Constitution", "addAgent", agentAlias0, "Smoky0PublicKey");
+            $$.blockchain.startTransactionAs("secretAgent","Constitution", "addAgent", "superMan", "fakeSmokyPublicKey");
+            $$.blockchain.startTransactionAs("secretAgent", "Constitution", "updatePublicKey", "superMan", "supermanPublicKey");
             let  agent = $$.blockchain.lookup("Agent", "superMan");
 
             assert.equal(agent.publicKey, "supermanPublicKey");
-            $$.transactions.start("Constitution", "addAgent", agentAlias, "SmokyPublicKey");
+            $$.blockchain.startTransactionAs("secretAgent","Constitution", "addAgent", agentAlias, "SmokyPublicKey");
             //$$.blockchain.dump();
            restartBlockchainWithoutCache(done);
         });

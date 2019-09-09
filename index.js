@@ -30,7 +30,7 @@ $$.asset            = $$.assets;
 $$.transactions     = callflowModule.createSwarmEngine("transaction", transactionUtils);
 $$.transaction      = $$.transactions;
 
-let pskcryt = require("pskcrypto");
+let pskcrypt = require("pskcrypto");
 
 
 module.exports = {
@@ -51,7 +51,7 @@ module.exports = {
     },
      createBlock:function (blockset, pulse, previous) {
         var block = {blockset, pulse, previous};
-        block.hash = pskcryt.hashValues(block);
+        block.hash = pskcrypt.hashValues(block);
         return block;
 
     },

@@ -216,7 +216,7 @@ function PSKDB(worldStateCache, historyStorage){
     }
 }
 
-let lec = require("../strategies/securityParadigms/localExecutionCache");
+let lec = require("./securityParadigms/localExecutionCache");
 
     /* play the role of DBTransactionHandler (readKey, writeKey) while also doing transaction validation*/
 function VerificationKeySpaceHandler(parentStorage, worldStateCache){

@@ -3,7 +3,7 @@ function PermissiveSignatureProvider(){
     return a signature of message ms for agent agentId
      */
     this.signAs = function(agentId, msg){
-        return "signature:"+agentId;
+        return "Signature from agent "+agentId + " should be here!";
     }
 
     this.verify = function(msg, signatures){

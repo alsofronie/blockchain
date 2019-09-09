@@ -60,7 +60,7 @@ function createLookup(pdsHandler, SPRegistry, worldStateCache){
 }
 
 function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvider) {
-    let spr = require("../strategies/securityParadigms/securityParadigmRegistry").getRegistry(this);
+    let spr = require("./securityParadigms/securityParadigmRegistry").getRegistry(this);
     let self = this;
     this.beginTransaction = function (transactionSwarm, handler) {
         if (!transactionSwarm) {
@@ -111,6 +111,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
         let swarm = $$.transaction.start(transactionSwarmType,...args);
         swarm.setMetadata(CNST.COMMAND_ARGS, args);
         swarm.setMetadata(CNST.SIGNING_AGENT, agentId);
+        console.log(swarm);
     }
 
     this.commit = function (transaction) {

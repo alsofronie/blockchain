@@ -5,7 +5,7 @@ var assert = dc.assert;
 var bm = require('../index');
 require('./testUtil/simplestConstitution');
 
-var tu = require('testUtil');
+var tu = require('./testUtil');
 const storageFolder = "./__storageFolder";
 
 dc.createTestFolder(storageFolder, mainTest);

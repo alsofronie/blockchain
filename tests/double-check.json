@@ -1,0 +1,3 @@
+{
+  "ignore": ["obsolete", "historyStorages", "pskdb", "signsensus", "testUtil", "worldStateStorages"]
+}

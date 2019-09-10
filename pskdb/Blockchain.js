@@ -111,7 +111,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
         let swarm = $$.transaction.start(transactionSwarmType,...args);
         swarm.setMetadata(CNST.COMMAND_ARGS, args);
         swarm.setMetadata(CNST.SIGNING_AGENT, agentId);
-        console.log(swarm);
+       //console.log(swarm);
     }
 
     this.commit = function (transaction) {

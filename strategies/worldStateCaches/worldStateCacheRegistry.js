@@ -84,7 +84,7 @@ function MemoryCache() {
     };
 
     this.updateState = function (internalValues, callback) {
-        console.info("Commiting state in memory cache "/*, internalValues*/)
+        //console.info("Commiting state in memory cache "/*, internalValues*/)
         storage.pskdb = internalValues;
         storage.pulse = internalValues.pulse;
         callback(null, storage.pskdb);

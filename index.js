@@ -1,5 +1,5 @@
 ___DISABLE_OBSOLETE_ZIP_ARCHIVER_WAIT_FOR_BARS = true;
-require("../../../psknode/bundles/pskruntime.js");
+//require("../../../psknode/bundles/pskruntime.js");
 var callflowModule = require("callflow");
 var pskcrypto = require("pskcrypto");
 
@@ -57,6 +57,9 @@ module.exports = {
     },
     createSignatureProvider:function(name,...args){
         return require("./strategies/signatureProvidersRegistry/signatureProvidersRegistry").createSignatureProvider(name,...args);
+    },
+    createNetworkCommunicationStrategy:function(name,...args){
+        return require("./strategies/networkCommunication/networkCommunicationStrategiesRegistry").createNetworkAdapter(name,...args);
     }
 }
 

@@ -17,10 +17,9 @@ let signatureProvider = bm.createSignatureProvider("permissive");
 
 
 
-
 function mainTest(err, storageFolder) {
 
-    assert.disableCleanings(); //to debug it during development of the test
+    //assert.disableCleanings(); //to debug it during development of the test
 
     let worldStateCache = bm.createWorldStateCache("fs", storageFolder);
     let historyStorage = bm.createHistoryStorage("fs", storageFolder);

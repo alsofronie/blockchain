@@ -60,6 +60,9 @@ module.exports = {
     },
     createNetworkCommunicationStrategy:function(name,...args){
         return require("./strategies/networkCommunication/networkCommunicationStrategiesRegistry").createNetworkAdapter(name,...args);
+    },
+    createVotingStrategy:function(name,...args){
+        return require("./strategies/votingStrategies/votingStrategiesRegistry").createVotingStrategy(name,...args);
     }
 }
 

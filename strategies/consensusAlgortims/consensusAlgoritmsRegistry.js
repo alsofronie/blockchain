@@ -1,10 +1,13 @@
 var mod = require("../../index");
 
 function DirectCommitAlgorithm(){
-    this.pskdb = null;
+    let pskdb = null;
+    this.setPSKDB = function(_pskdb){
+        pskdb = _pskdb;
+    }
     this.commit = function(transaction){
         const set = {};
-        var cp = this.pskdb.getCurrentPulse();
+        let cp = this.pskdb.getCurrentPulse();
         set[transaction.digest] = transaction;
         this.pskdb.commitBlock(mod.createBlock(set, cp, this.pskdb.getPreviousHash()));
         cp++;
@@ -17,13 +20,20 @@ function DirectCommitAlgorithm(){
 }
 
 
-function SignSensusAlgoritm(){
-    this.pds = null;
-    this.commit = function(pds, transaction){
-        $$.blockchain.commit(transaction);
+function SignSensusAlgoritm(nodeName, networkImplementation, pulsePeriodicity, votingBox){
+    let pskdb = null;
+    let algorithm = null;
+    this.setPSKDB = function(_pskdb){
+        pskdb = _pskdb;
+        algorithm = require("../../signsensus/SignSensusImplementation").createConsensusManager(nodeName, networkImplementation, pskdb, pulsePeriodicity, votingBox);
     }
+
+    this.commit = function(transaction){
+        algorithm.sendLocalTransactionToConsensus(transaction);
+    }
+
     this.getCurrentPulse = function(){
-        return 0;
+        return algorithm.currentPulse;
     }
 }
 
@@ -33,7 +43,7 @@ module.exports = {
             case "direct": return new DirectCommitAlgorithm(...args);
             case "SignSensus": return new  SignSensusAlgoritm(...args);
             default:
-                $$.exception("Unknown consensu algortihm  " + name);
+                $$.exception("Unknown consensus algortihm  " + name);
         }
     }
 }

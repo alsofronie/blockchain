@@ -1,48 +1,42 @@
-var pskcrypto = require("pskcrypto");
-var fs = require("fs");
+let pskcrypto = require("pskcrypto");
+let fs = require("fs");
 
-var consUtil = require("./consUtil");
+let consUtil = require("./consUtil");
 
-var detailedDebug = false;
+let detailedDebug = false;
 
 
-var pulseSwarm = $$.flow.describe("pulseSwarm", {
-    public: {
-    },
-
+let pulseSwarm = $$.flow.describe("pulseSwarm", {
     start: function (delegatedAgentName, communicationOutlet, pdsAdapter, pulsePeriodicity, votingBox) {
-        this.nodeName               = delegatedAgentName;
-        this.communicationOutlet    = communicationOutlet;
-        this.pdsAdapter             = pdsAdapter;
-        this.pulsePeriodicity       = pulsePeriodicity;
-
-        this.votingBox = votingBox;
-
-        this.currentPulse = 0;
-        this.topPulseConsensus = 0;
-        this.lastPulseAchievedConsensus = 0;
-
 
         this.lset = {}; // digest -> transaction - localy generated set of transactions (`createTransactionFromSwarm` stores each transaction; `beat` resets `lset`)
         this.dset = {}; // digest -> transaction - remotely delivered set of transactions that will be next participate in consensus
         this.pset = {}; // digest -> transaction - consensus pending set
 
+        this.currentPulse = 0;
+        this.topPulseConsensus = 0;
+        this.lastPulseAchievedConsensus = 0;
+
         this.pulsesHistory = {};
-
-
 
         this.vsd = this.pdsAdapter.getVSD();
 
         this.level = 0;
-        this.commitCounter = 0;                 // "Total tranzactii comise"
+        this.commitCounter = 0;                 // total  number of transactions that got commited
+
+        this.nodeName               = delegatedAgentName;
+        this.communicationOutlet    = communicationOutlet;
+        this.pdsAdapter             = pdsAdapter;
+        this.pulsePeriodicity       = pulsePeriodicity;
+        this.votingBox = votingBox;
 
         this.beat();
     },
 
     beat: function () {
-        var ptBlock = null;
-        var nextConsensusPulse = this.topPulseConsensus + 1;
-        var majoritarianVSD = "none";
+        let ptBlock = null;
+        let nextConsensusPulse = this.topPulseConsensus + 1;
+        let majoritarianVSD = "none";
 
         while (nextConsensusPulse <= this.currentPulse) {
             ptBlock = consUtil.detectMajoritarianPTBlock(nextConsensusPulse, this.pulsesHistory, this.votingBox);
@@ -68,10 +62,10 @@ var pulseSwarm = $$.flow.describe("pulseSwarm", {
                     this.pdsAdapter.commit(resultSet);
                     this.level++;
                     //fs.writeFileSync(this.level+"-"+this.vsd+"-"+this.nodeName, JSON.stringify(resultSet));
-                    var topDigest = ptBlock[ptBlock.length - 1];
+                    let topDigest = ptBlock[ptBlock.length - 1];
                     this.topPulseConsensus = this.pset[topDigest].transactionPulse;
                     consUtil.setsRemovePtBlockAndPastTransactions(this.pset, ptBlock, this.topPulseConsensus); //cleanings
-                    var oldVsd = this.vsd;
+                    let oldVsd = this.vsd;
                     this.vsd = this.pdsAdapter.getVSD();
 
                     this.lastPulseAchievedConsensus = nextConsensusPulse;   //safer than `this.currentPulse`!?
@@ -97,7 +91,7 @@ var pulseSwarm = $$.flow.describe("pulseSwarm", {
         //daca nu a reusit,ar trebui sa vada daca nu exista un alt last majoritar
         ptBlock = this.pdsAdapter.computePTBlock(this.pset);
 
-        var newPulse = consUtil.createPulse(
+        let newPulse = consUtil.createPulse(
             this.nodeName,                          //==> Pulse.signer
             this.currentPulse,
             ptBlock,
@@ -108,39 +102,36 @@ var pulseSwarm = $$.flow.describe("pulseSwarm", {
 
         //console.log("\t\tPulse", this.nodeName, this.vsd.slice(0,8) );
         //this.print("Pulse" );
-        this.recordPulse(this.nodeName, newPulse);
+        this.recordPulse(newPulse);
 
-        var self = this;
-        self.communicationOutlet.broadcastPulse(self.nodeName, newPulse);
+        let self = this;
+        self.communicationOutlet.broadcastPulse(newPulse);
         
         this.lset = {};
         this.currentPulse++;
 
         setTimeout(this.beat, this.pulsePeriodicity);   //self invocation of phase `beat`
     },
-
     hasAllTransactions: function (ptBlock) {
-        for (var i = 0; i < ptBlock.length; i++) {
-            var item = ptBlock[i];
+        for (let i = 0; i < ptBlock.length; i++) {
+            let item = ptBlock[i];
             if (!this.pset.hasOwnProperty(item)) {
                 return false;
             }
         }
         return true;
     },
-
-    createTransactionFromSwarm: function (swarm) {
-        var t = consUtil.createTransaction(this.currentPulse, swarm);
+    sendLocalTransactionToConsensus: function (t) {
         this.lset[t.digest] = t;
         return t;
     },
-
     /**
-     * 
-     * @param {String} from e.g. this.nodeName a.k.a. delegatedAgentName
+     *
      * @param {Pulse} pulse e.g. new Pulse(this.nodeName, this.currentPulse, ......)
      */
-    recordPulse: function (from, pulse) {
+    recordPulse: function (pulse) {
+        let from = pulse.signer;
+
         if (!pulse.ptBlock) {
             pulse.ptBlock = [];
         }
@@ -151,27 +142,13 @@ var pulseSwarm = $$.flow.describe("pulseSwarm", {
         }
         this.pulsesHistory[pulse.currentPulse][from] = pulse;
 
-        //console.log(pulse.top, from);
-        /*
-        var h = this.pulsesHistory[pulse.top];
-        if (h) {
-            var p = [from];
-            if (p) {
-                p.vsd = pulse.vsd;
-            } else {
-                console.log("-----------------------", pulse.top, from);
-                this.pulsesHistory[pulse.top][from] = pulse;
-            }
-        }
-        */
-
-        if (pulse.currentPulse >= this.topPulseConsensus) {
+        if(pulse.currentPulse >= this.topPulseConsensus) {
             if (pulse.currentPulse <= this.lastPulseAchievedConsensus) {
-                for (var d in pulse.lset) {
+                for (let d in pulse.lset) {
                     this.pset[d] = pulse.lset[d];// could still be important for consensus
                 }
             } else {
-                for (var d in pulse.lset) {
+                for (let d in pulse.lset) {
                     this.dset[d] = pulse.lset[d];
                 }
             }
@@ -213,19 +190,19 @@ var pulseSwarm = $$.flow.describe("pulseSwarm", {
     },
     printPset: function () {
         function sortedDigests(set) {
-            var res = [];
-            for (var d in set) {
+            let res = [];
+            for (let d in set) {
                 res.push(d);
             }
             return pskcrypto.hashValues(res.sort());
         }
         function appendToCSV(filename, arr) {
             const reducer = (accumulator, currentValue) => accumulator + " , " + currentValue;
-            var str = arr.reduce(reducer, "") + "\n";
+            let str = arr.reduce(reducer, "") + "\n";
             fs.appendFileSync(filename, str);
         }
 
-        var arr = [
+        let arr = [
             this.nodeName,
             this.currentPulse,
             this.topPulseConsensus,
@@ -253,8 +230,7 @@ var pulseSwarm = $$.flow.describe("pulseSwarm", {
  * @returns {SwarmDescription} A new instance of "pulseSwarm" flow, with phase `start` already running
  */
 exports.createConsensusManager = function (delegatedAgentName, communicationOutlet, pdsAdapter, pulsePeriodicity, votingBox) {
-    var instance = pulseSwarm();
+    let instance = pulseSwarm();
     instance.start(delegatedAgentName, communicationOutlet, pdsAdapter, pulsePeriodicity, votingBox);
-
     return instance;
 }

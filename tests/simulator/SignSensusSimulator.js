@@ -37,16 +37,16 @@ if (cluster.isMaster) {
     function main(err, storageFolder){
         let worldStateCache = bm.createWorldStateCache("fs", storageFolder);
         let historyStorage = bm.createHistoryStorage("fs", storageFolder);
-        let consensusAlgorithm = bm.createConsensusAlgorithm("direct");
         let signatureProvider  =  bm.createSignatureProvider("permissive");
-
         let network  =  bm.createNetworkCommunicationStrategy("ipc");
+        let votingStrategy  =  bm.createVotingStrategy("democratic", cfg.MAX_NODES);
+        let consensusAlgorithm = bm.createConsensusAlgorithm("SignSensus", "Node:" + storageFolder, network, cfg.PULSE_PERIODICITY, votingStrategy);
 
-        network.listen(function(err, msg){
-            console.log("In Child received:", msg);
-        })
+        network.listen(function(err, pulse){
+            //console.log("In Child received:", pulse);
+            pulse.recordPulse(pulse);
+        });
 
-        network.broadcastPulse({pulse:storageFolder});
         bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider, false, false);
     }
 

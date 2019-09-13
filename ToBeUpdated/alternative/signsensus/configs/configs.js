@@ -13,7 +13,7 @@ exports.configs = [
     },
 
     //reason: sometime the output is `[STATISTICS]: { NUMBER_OF_TRANZACTIONS_PER_SEC: 0,  NUMBER_OF_PULSES: 84,  TIME_TO_COMMIT_TRANZACTION: Infinity }`
-    //`consensusManager.js` LINE 61: `beat` outputs {ptBlock.length, this.vsd, majoritarianVSD} == {0, "empty", "empty"} for every node!
+    //`SignSensusImplementation.js` LINE 61: `beat` outputs {ptBlock.length, this.vsd, majoritarianVSD} == {0, "empty", "empty"} for every node!
     {
         MAX_NODES: 10,
         SIMULATION_TIMEOUT: 4000,

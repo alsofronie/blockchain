@@ -212,6 +212,10 @@ function PSKDB(worldStateCache, historyStorage){
     this.computePTBlock = function(nextBlockSet){
         var tempStorage = new DataShell(mainStorage);
         return tempStorage.computePTBlock(nextBlockSet);
+    }
+
+    /* Verification Spce Digest is now the hash of the latest commited block*/
+    this.getVSD = function(){
 
     }
 }

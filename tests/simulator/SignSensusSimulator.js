@@ -42,12 +42,24 @@ if (cluster.isMaster) {
         let votingStrategy  =  bm.createVotingStrategy("democratic", cfg.MAX_NODES);
         let consensusAlgorithm = bm.createConsensusAlgorithm("SignSensus", "Node:" + storageFolder, network, cfg.PULSE_PERIODICITY, votingStrategy);
 
-        network.listen(function(err, pulse){
-            //console.log("In Child received:", pulse);
-            pulse.recordPulse(pulse);
-        });
-
         bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider, false, false);
+
+
+        $$.blockchain.start(function (err) {
+            $$.transactions.start("Constitution", "addAgent", "root", "rootPK");
+            network.listen(function(err, pulse){
+                //console.log("In Child received:", pulse);
+                consensusAlgorithm.recordPulse(pulse);
+            });
+
+            for(let i=0;i<cfg.MAX_TRANSACTIONS; i++){
+                if(i%2 == 0){
+                    $$.transactions.start("Constitution", "addAgent", "agent"+i, "PK"+ storageFolder);
+                } else {
+                    $$.transactions.start("Constitution", "updateAgent", "root", "storageFolder");
+                }
+            }
+        });
     }
 
     dc.createTestFolder(storageFolder, main);

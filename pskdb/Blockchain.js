@@ -62,6 +62,9 @@ function createLookup(pdsHandler, SPRegistry, worldStateCache){
 function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvider) {
     let spr = require("./securityParadigms/securityParadigmRegistry").getRegistry(this);
     let self = this;
+
+    consensusAlgorithm.setPSKDB(pskdb);
+
     this.beginTransaction = function (transactionSwarm, handler) {
         if (!transactionSwarm) {
             $$.exception("Can't begin a transaction outside of a swarm instance from transactions namespace");

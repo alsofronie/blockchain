@@ -26,6 +26,8 @@ function SignSensusAlgoritm(nodeName, networkImplementation, pulsePeriodicity, v
     this.setPSKDB = function(_pskdb){
         pskdb = _pskdb;
         algorithm = require("../../signsensus/SignSensusImplementation").createConsensusManager(nodeName, networkImplementation, pskdb, pulsePeriodicity, votingBox);
+        this.recordPulse =  algorithm.recordPulse;
+        console.log("Setting pskdb for algorithm")
     }
 
     this.commit = function(transaction){

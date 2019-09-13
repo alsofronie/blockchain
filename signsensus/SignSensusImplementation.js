@@ -19,16 +19,16 @@ let pulseSwarm = $$.flow.describe("pulseSwarm", {
 
         this.pulsesHistory = {};
 
-        this.vsd = this.pdsAdapter.getVSD();
+        this.vsd = pdsAdapter.getVSD();
 
-        this.level = 0;
+
         this.commitCounter = 0;                 // total  number of transactions that got commited
 
         this.nodeName               = delegatedAgentName;
         this.communicationOutlet    = communicationOutlet;
         this.pdsAdapter             = pdsAdapter;
         this.pulsePeriodicity       = pulsePeriodicity;
-        this.votingBox = votingBox;
+        this.votingBox              = votingBox;
 
         this.beat();
     },
@@ -42,26 +42,21 @@ let pulseSwarm = $$.flow.describe("pulseSwarm", {
             ptBlock = consUtil.detectMajoritarianPTBlock(nextConsensusPulse, this.pulsesHistory, this.votingBox);
             majoritarianVSD = consUtil.detectMajoritarianVSD(nextConsensusPulse, this.pulsesHistory, this.votingBox);
 
-
             if (ptBlock != "none" && this.vsd == majoritarianVSD) {
                 if (!this.hasAllTransactions(ptBlock)) {
                     this.print("Unknown transactions detected...")
                     break;
                 }
-
                 //console.log(this.nodeName, ptBlock.length,this.vsd, majoritarianVSD, nextConsensusPulse);
-
                 if (ptBlock.length /*&& this.hasAllTransactions(ptBlock)*/) {
                     this.pset = consUtil.setsConcat(this.pset, this.dset);
                     this.dset = {};
-                    var resultSet = consUtil.makeSetFromBlock(this.pset, ptBlock);
+                    let resultSet = consUtil.makeSetFromBlock(this.pset, ptBlock);
 
                     this.commitCounter += ptBlock.length;
                     //this.print("\t\tBlock [" + this.dumpPtBlock(ptBlock) + "] at pulse " + nextConsensusPulse + " and VSD " +  this.vsd.slice(0,8));
 
                     this.pdsAdapter.commit(resultSet);
-                    this.level++;
-                    //fs.writeFileSync(this.level+"-"+this.vsd+"-"+this.nodeName, JSON.stringify(resultSet));
                     let topDigest = ptBlock[ptBlock.length - 1];
                     this.topPulseConsensus = this.pset[topDigest].transactionPulse;
                     consUtil.setsRemovePtBlockAndPastTransactions(this.pset, ptBlock, this.topPulseConsensus); //cleanings
@@ -174,8 +169,8 @@ let pulseSwarm = $$.flow.describe("pulseSwarm", {
         }
 
         function countSet(set) {
-            var l = 0;
-            for (var v in set) l++;
+            let l = 0;
+            for (let v in set) l++;
             return l;
         }
 

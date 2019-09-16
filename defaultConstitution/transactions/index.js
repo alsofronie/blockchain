@@ -1,2 +1,2 @@
-equire('../../../defaultConstitution/transactions/domainSwarms');
-require('./agentsSwarm');
+require('./domainTransaction');
+require('./agentTransaction');

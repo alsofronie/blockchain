@@ -28,9 +28,9 @@ $$.transaction.describe("transactions", {
         $$.blockchain.persist(this.transaction);
     },
     updateAgent: function (alias, publicKey) {
-        var agent = this.transaction.lookup("Agent", alias);
+        let agent = this.transaction.lookup("Agent", alias);
         agent.update(publicKey);
-        this.transaction.save(reference);
+        this.transaction.save(agent);
         $$.blockchain.persist(this.transaction);
     }
 });

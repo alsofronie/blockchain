@@ -19,7 +19,7 @@ let pulseSwarm = $$.flow.describe("pulseSwarm", {
 
         this.pulsesHistory = {};
 
-        this.vsd = pdsAdapter.getVSD();
+        this.vsd = pdsAdapter.getHashLatestBlock();
 
 
         this.commitCounter = 0;                 // total  number of transactions that got commited
@@ -111,6 +111,7 @@ let pulseSwarm = $$.flow.describe("pulseSwarm", {
         for (let i = 0; i < ptBlock.length; i++) {
             let item = ptBlock[i];
             if (!this.pset.hasOwnProperty(item)) {
+                //TODO: ask for the missing transaction
                 return false;
             }
         }
@@ -130,7 +131,8 @@ let pulseSwarm = $$.flow.describe("pulseSwarm", {
         if (!pulse.ptBlock) {
             pulse.ptBlock = [];
         }
-        pulse.blockDigest = pskcrypto.hashValues(pulse.ptBlock);
+        //pulse.blockDigest = pskcrypto.hashValues(pulse.ptBlock);
+        //pulse.blockDigest = pulse.ptBlock.blockDigest;
 
         if (!this.pulsesHistory[pulse.currentPulse]) {
             this.pulsesHistory[pulse.currentPulse] = {};

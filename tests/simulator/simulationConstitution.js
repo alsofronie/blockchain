@@ -24,9 +24,11 @@ $$.transaction.describe("Constitution", {
     },
     updatePublicKey: function (alias, publicKey) {
         let agent = $$.blockchain.lookup("Agent", alias);
-        agent.publicKey = publicKey;
-        this.transaction.add(agent);
-        this.transaction.commit();
-        console.log("Updating Agent:", alias,  "PublicKey:", publicKey);
+        if(agent){
+            agent.publicKey = publicKey;
+            this.transaction.add(agent);
+            this.transaction.commit();
+            console.log("Updating Agent:", alias,  "PublicKey:", publicKey);
+        }
     }
 })

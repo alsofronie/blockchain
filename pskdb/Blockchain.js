@@ -61,7 +61,7 @@ function createLookup(pdsHandler, SPRegistry, worldStateCache){
 
         if (!value) {
             $$.log("Lookup fail, asset not found: ",assetType, " with alias", aid, value);
-            pdsHandler.dump();
+            //pdsHandler.dump();
             //return $$.asset.start(assetType);
             return null;
         } else {

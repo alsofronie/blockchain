@@ -56,7 +56,7 @@ if (cluster.isMaster) {
                 if(i%2 == 0){
                     $$.transactions.start("Constitution", "addAgent", "agent"+i, "PK"+ storageFolder);
                 } else {
-                    $$.transactions.start("Constitution", "updateAgent", "root", "storageFolder");
+                    $$.transactions.start("Constitution", "updatePublicKey", "root", "storageFolder");
                 }
             }
         });

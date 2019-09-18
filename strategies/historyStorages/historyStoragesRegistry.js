@@ -1,7 +1,23 @@
-function FsHistoryStorage(folder) {
 
+function LatestHashTracker(){
+    let hlb = "none";
+    let maxBlockNumber = -1;
+    this.update = function(blockNumber,block){
+        if(blockNumber > maxBlockNumber){
+            hlb = block.blockDigest;
+        }
+    }
+    this.getHashLatestBlock = function(){
+        return hlb;
+    }
+}
+
+function FsHistoryStorage(folder) {
     const blocksPath = folder + "/blocks";
-    var fs = require("fs");
+    let lht = new LatestHashTracker();
+    this.getHashLatestBlock = lht.getHashLatestBlock;
+
+    let fs = require("fs");
 
     fs.mkdir(blocksPath, function (err) {
     });
@@ -10,6 +26,7 @@ function FsHistoryStorage(folder) {
         console.log("Writing block:", block.pulse);
         fs.writeFile(blocksPath + "/index", block.pulse.toString(), $$.logError);
         fs.writeFile(blocksPath + "/" + block.pulse, JSON.stringify(block, null, 1), callback);
+        lht.update(block.pulse,block);
     }
 
     this.getLatestBlockNumber = function (callback) {
@@ -30,12 +47,13 @@ function FsHistoryStorage(folder) {
                 callback(err, null);
             } else {
                 callback(null, JSON.parse(res));
+                lht.update(res.pulse,res);
             }
         });
     }
 
     ////////////////////////
-    var observer;
+    let observer;
     //send to callback all blocks newer then fromVSD
     this.observeNewBlocks = function (fromVSD, callback) {
         observer = callback;
@@ -44,10 +62,13 @@ function FsHistoryStorage(folder) {
 
 
 function MemoryStorage() {
-    var blocks = [];
+    let blocks = [];
+    let lht = new LatestHashTracker();
+    this.getHashLatestBlock = lht.getHashLatestBlock;
 
     this.appendBlock = function (block, announceFlag, callback) {
         blocks.push(block);
+        lht.update(blocks.length,block);
         callback(null, block);
 
     }
@@ -57,6 +78,7 @@ function MemoryStorage() {
     }
 
     this.loadSpecificBlock = function (blockNumber, callback) {
+        lht.update(blockNumber,blocks[blockNumber]);
         callback(null, blocks[blockNumber]);
     }
 }

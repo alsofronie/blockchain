@@ -1,5 +1,7 @@
 let CNST = require("../moduleConstants");
-var cutil   = require("../signsensus/consUtil");
+let  cutil   = require("../signsensus/consUtil");
+let bm = require("../index");
+
 //var ssutil  = require("pskcrypto");
 
 
@@ -210,14 +212,12 @@ function PSKDB(worldStateCache, historyStorage){
     }
 
     this.computePTBlock = function(nextBlockSet){
-        var tempStorage = new DataShell(mainStorage);
+        let tempStorage = new VerificationKeySpaceHandler(mainStorage, worldStateCache);
         return tempStorage.computePTBlock(nextBlockSet);
     }
 
-    /* Verification Spce Digest is now the hash of the latest commited block*/
-    this.getVSD = function(){
-
-    }
+    /* Verification Space Digest is now the hash of the latest commited block*/
+    this.getHashLatestBlock = historyStorage.getHashLatestBlock;
 }
 
 let lec = require("./securityParadigms/localExecutionCache");
@@ -302,7 +302,7 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
 
     this.computePTBlock = function(nextBlockSet){   //make a transactions block from nextBlockSet by removing invalid transactions from the key versions point of view
         let validBlock = [];
-        let orderedByTime = cutil.orderTransactions(nextBlockSet);
+        let orderedByTime = cutil.orderCRTransactions(nextBlockSet);
         let i = 0;
 
         while(i < orderedByTime.length){
@@ -312,6 +312,8 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
             }
             i++;
         }
+
+
         return validBlock;
     }
 

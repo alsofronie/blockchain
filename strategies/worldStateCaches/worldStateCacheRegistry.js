@@ -11,11 +11,11 @@ function StorageContainer(){
 
     this.readKey = function(key){
         return self.keys[key];
-    }
+    };
 
     this.writeKey = function(key, value){
         self.keys[key] = value;
-    }
+    };
 
     function updateAlias(assetType, alias,swarmId){
         let keyName = assetType + mc.ALIASES;
@@ -43,7 +43,10 @@ function LocalWSCache(folder) {
     this.writeKey = storage.writeKey;
     this.updateAliases = storage.updateAliases;
 
-    const worldStateCachePath = folder + "/worldSateCache";
+    //just in case the folder got to use as storage does not exist
+    require("fs").mkdirSync(folder, {recursive: true});
+
+    const worldStateCachePath = folder + "/worldStateCache";
     let fs = require("fs");
 
     this.getState = function (callback) {
@@ -60,12 +63,12 @@ function LocalWSCache(folder) {
                 callback(null, storage.pskdb);
             }
         });
-    }
+    };
 
     this.updateState = function (internalValues, callback) {
         storage.pskdb = internalValues;
         fs.writeFile(worldStateCachePath, JSON.stringify(storage, null, 1), callback);
-    }
+    };
 
     this.dump = function(){
         console.log("LocalWSCache:", storage);
@@ -107,4 +110,4 @@ module.exports = {
                 $$.exception("Unknown blockchain cache " + cacheType);
         }
     }
-}
+};

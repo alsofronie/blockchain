@@ -27,7 +27,19 @@ function AliasIndex(assetType, pdsHandler, worldStateCache) {
     }
 }
 
+function createLoadAssets(pdsHandler, worldStateCache){
+    return function (assetType) {
+        assetType = $$.fixSwarmName(assetType);
+        const assets = [];
 
+        const aliasIndex = new AliasIndex(assetType, pdsHandler, worldStateCache);
+        Object.keys(aliasIndex.getAliases()).forEach(alias => {
+            assets.push($$.blockchain.lookup(assetType, alias));
+        });
+
+        return assets;
+    };
+}
 
 function createLookup(pdsHandler, SPRegistry, worldStateCache){
     function hasAliases(spaceName) {
@@ -77,7 +89,11 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
 
 
     this.start = function(reportBootingFinishedCallback){
-        pskdb.initialise(reportBootingFinishedCallback);
+        pskdb.initialise(()=>{
+            //we ahould load the state of the world cache
+            worldStateCache.getState(reportBootingFinishedCallback);
+        });
+
     };
 
 
@@ -85,6 +101,8 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
         let newLookup = createLookup(pskdb.getHandler(), spr, worldStateCache);
         return newLookup(assetType, aid);
     };
+
+    this.loadAssets = createLoadAssets(pskdb.getHandler(), worldStateCache);
 
     this.getSPRegistry = function(){
         return spr;
@@ -101,21 +119,21 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
 
     this.registerSecurityParadigm = function(SPName, apiName, factory){
         return spr.register(SPName, apiName, factory);
-    }
+    };
 
 
     this.startCommandAs = function(agentId, transactionSwarmType,...args){
         let t = bm.createCRTransaction(transactionSwarmType, args, null, null, consensusAlgorithm.getCurrentPulse());
         t.signatures = [this.signAs(agentId, t.digest)];
         consensusAlgorithm.commit(t);
-    }
+    };
 
     this.startTransactionAs = function(agentId, transactionSwarmType,...args){
         let swarm = $$.transaction.start(transactionSwarmType,...args);
         swarm.setMetadata(CNST.COMMAND_ARGS, args);
         swarm.setMetadata(CNST.SIGNING_AGENT, agentId);
        //console.log(swarm);
-    }
+    };
 
     this.commit = function (transaction) {
         let swarm = transaction.getSwarm();
@@ -129,7 +147,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
 
     this.dump = function(){
         pskdb.getHandler().dump();
-    }
+    };
 }
 
 function Transaction(pdsHandler, transactionSwarm, worldStateCache, spr) {
@@ -160,17 +178,7 @@ function Transaction(pdsHandler, transactionSwarm, worldStateCache, spr) {
 
     this.lookup = createLookup(pdsHandler, spr, worldStateCache);
 
-    this.loadAssets = function (assetType) {
-        assetType = $$.fixSwarmName(assetType);
-        const assets = [];
-
-        const aliasIndex = new AliasIndex(assetType, pdsHandler, worldStateCache);
-        Object.keys(aliasIndex.getAliases()).forEach(alias => {
-            assets.push(self.lookup(assetType, alias));
-        });
-
-        return assets;
-    };
+    this.loadAssets = createLoadAssets(pdsHandler, worldStateCache);
 
     this.commit = function(){
         $$.blockchain.commit(self);

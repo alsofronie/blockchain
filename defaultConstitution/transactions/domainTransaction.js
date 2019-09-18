@@ -46,38 +46,15 @@ $$.transaction.describe("Domain", {
         this.commit();
     },
     getDomainDetails:function(alias){
-        const transaction = $$.blockchain.beginTransaction({});
-        const domain = transaction.lookup('global.DomainReference', alias);
-
-        if (!domain) {
-            this.return(new Error('Could not find swarm named "global.DomainReference"'));
-            return;
-        }
-
-        this.return(null, domain.toJSON());
+        let domain = $$.blockchain.lookup("DomainReference", alias);
+        return domain.toJson();
     },
     connectDomainToRemote(domainName, alias, remoteEndPoint){
-        const transaction = $$.blockchain.beginTransaction({});
-        const domain = transaction.lookup('global.DomainReference', domainName);
-
-        if (!domain) {
-            this.return(new Error('Could not find swarm named "global.DomainReference"'));
-            return;
-        }
-
+        let domain = $$.blockchain.lookup("DomainReference", domainName);
         domain.addRemoteInterface(alias, remoteEndPoint);
 
-        try{
-            transaction.add(domain);
-
-            $$.blockchain.commit(transaction);
-        }catch(err){
-            console.log(err);
-            this.return(new Error("Domain update failed!"));
-            return;
-        }
-
-        this.return(null, alias);
+        this.transaction.add(domain);
+        this.commit();
     },
     getDomainDetails: sharedPhases.getAssetFactory('global.DomainReference'),
     getDomains: sharedPhases.getAllAssetsFactory('global.DomainReference')

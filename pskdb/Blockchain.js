@@ -89,11 +89,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
 
 
     this.start = function(reportBootingFinishedCallback){
-        pskdb.initialise(()=>{
-            //we ahould load the state of the world cache
-            worldStateCache.getState(reportBootingFinishedCallback);
-        });
-
+        pskdb.initialise(reportBootingFinishedCallback);
     };
 
 

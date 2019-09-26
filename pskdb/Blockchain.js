@@ -41,7 +41,7 @@ function createLoadAssets(blockchain, pdsHandler, worldStateCache){
     };
 }
 
-function createLookup(pdsHandler, SPRegistry, worldStateCache){
+function createLookup(blockchain, pdsHandler, SPRegistry, worldStateCache){
     function hasAliases(spaceName) {
         let ret  = !!worldStateCache.readKey(spaceName + CNST.ALIASES);
         return ret;
@@ -65,8 +65,9 @@ function createLookup(pdsHandler, SPRegistry, worldStateCache){
             //return $$.asset.start(assetType);
             return null;
         } else {
-            const swarm = $$.asset.continue(assetType, JSON.parse(value));
-            return swarm;
+            const asset = $$.asset.continue(assetType, JSON.parse(value));
+            asset.__reinit(blockchain);
+            return asset;
         }
     };
 }
@@ -96,7 +97,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
 
 
     this.lookup = function(assetType, aid){
-        let newLookup = createLookup(pskdb.getHandler(), spr, worldStateCache);
+        let newLookup = createLookup(self, pskdb.getHandler(), spr, worldStateCache);
         return newLookup(assetType, aid);
     };
 
@@ -174,7 +175,7 @@ function Transaction(blockchain, pdsHandler, transactionSwarm, worldStateCache, 
         pdsHandler.writeKey(swarmTypeName + '/' + swarmId, J(serializedSwarm));
     };
 
-    this.lookup = createLookup(pdsHandler, spr, worldStateCache);
+    this.lookup = createLookup(blockchain, pdsHandler, spr, worldStateCache);
 
     this.loadAssets = createLoadAssets(blockchain, pdsHandler, worldStateCache);
 

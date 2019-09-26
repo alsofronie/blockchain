@@ -12,7 +12,10 @@ exports.createForObject = function(valueObject, thisObject, localId){
 	ret.home            = null;
 
 	ret.autoInit        = function(blockchain){
-		if(!blockchain) return;
+		if(!blockchain) {
+			$$.warn("Initialisation asset outside of a blockchain context");
+			return;
+		}
 		let sp = thisObject.getMetadata(CNST.SECURITY_PARADIGM);
 		thisObject.securityParadigm = blockchain.getSPRegistry().getSecurityParadigm(thisObject);
 		if(sp == undefined){

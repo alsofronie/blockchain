@@ -8,7 +8,9 @@ module.exports = {
         }
         let pds = require('./pskdb').newPSKDB(worldStateCache, historyStorage);
         consensusAlgorithm.pskdb = pds;
-        return new Blockchain(pds, consensusAlgorithm, worldStateCache, signatureProvider);
+        let blockchain = new Blockchain(pds, consensusAlgorithm, worldStateCache, signatureProvider);
+        pds.blockchain = blockchain;
+        return blockchain;
     },
     startDefaultDB: function (worldStateCache, historyStorage, consensusAlgorithm, signatureProvider, loadDefaultConstitution, forceReboot) {
         if ($$.blockchain && !forceReboot) {

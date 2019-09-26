@@ -105,7 +105,7 @@ function DBTransactionHandler(parentStorage){
 
 
 function PSKDB(worldStateCache, historyStorage){
-
+    this.blockchain = undefined;
     let mainStorage = new KeyValueDBWithVersions(worldStateCache);
     let self = this;
 
@@ -197,7 +197,7 @@ function PSKDB(worldStateCache, historyStorage){
         let blockSet = block.blockset;
         currentPulse = block.pulse;
 
-        let verificationKeySpace = new VerificationKeySpaceHandler(mainStorage, worldStateCache)
+        let verificationKeySpace = new VerificationKeySpaceHandler(mainStorage, worldStateCache, this.blockchain)
 
         verificationKeySpace.commit(blockSet);
 
@@ -212,7 +212,7 @@ function PSKDB(worldStateCache, historyStorage){
     }
 
     this.computePTBlock = function(nextBlockSet){
-        let tempStorage = new VerificationKeySpaceHandler(mainStorage, worldStateCache);
+        let tempStorage = new VerificationKeySpaceHandler(mainStorage, worldStateCache, blockchain);
         return tempStorage.computePTBlock(nextBlockSet);
     }
 
@@ -223,7 +223,7 @@ function PSKDB(worldStateCache, historyStorage){
 let lec = require("./securityParadigms/localExecutionCache");
 
     /* play the role of DBTransactionHandler (readKey, writeKey) while also doing transaction validation*/
-function VerificationKeySpaceHandler(parentStorage, worldStateCache){
+function VerificationKeySpaceHandler(parentStorage, worldStateCache, blockchain){
     let readSetVersions  = {}; //version of a key when read first time
     let writeSetVersions = {}; //increment version with each writeKey
     let writeSet         = {};  //contains only keys modified in handlers
@@ -285,7 +285,7 @@ function VerificationKeySpaceHandler(parentStorage, worldStateCache){
         }
 
         //TODO: potential double spending bug if a transaction was replaced
-        if(!lec.verifyTransaction(t, self, willBeCommited)){
+        if(!lec.verifyTransaction(t, self, willBeCommited, blockchain)){
             return false;
         }
 

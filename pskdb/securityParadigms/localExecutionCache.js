@@ -34,6 +34,7 @@ module.exports = {
             let assetValue = JSON.parse(new_value);
 
             let asset = $$.assets.continue(assetValue);
+            asset.__reinit(blockchain);
 
             new_assets[k][asset.getSwarmId()] = asset;
             handler.saveAlias(asset.getSwarmType(), asset.alias, asset.getSwarmId());
@@ -42,6 +43,7 @@ module.exports = {
                 /* undefined for new asset (did not exist before current transaction)*/
                 let assetValue = JSON.parse(old_value);
                 let asset = $$.assets.continue(assetValue);
+                asset.__reinit(blockchain);
                 if(asset.securityParadigm.mainParadigm == CNST.CONSTITUTIONAL){
                     fastCheck = false;
                 }

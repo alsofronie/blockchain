@@ -43,7 +43,7 @@ function createLoadAssets(blockchain, pdsHandler, worldStateCache){
 
 function createLookup(pdsHandler, SPRegistry, worldStateCache){
     function hasAliases(spaceName) {
-        var ret  = !!worldStateCache.readKey(spaceName + CNST.ALIASES);
+        let ret  = !!worldStateCache.readKey(spaceName + CNST.ALIASES);
         return ret;
     }
 
@@ -125,7 +125,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
     };
 
     this.startTransactionAs = function(agentId, transactionSwarmType,...args){
-        let swarm = $$.transaction.start(transactionSwarmType,...args);
+        let swarm = $$.transaction.startWithContext(self, transactionSwarmType,...args);
         swarm.setMetadata(CNST.COMMAND_ARGS, args);
         swarm.setMetadata(CNST.SIGNING_AGENT, agentId);
        //console.log(swarm);

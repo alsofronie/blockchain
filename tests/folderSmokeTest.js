@@ -47,8 +47,7 @@ function mainTest(err, storageFolder) {
         var consensusAlgorithm = bm.createConsensusAlgorithm("direct");
         bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider,false, true);
         $$.blockchain.start(function (err, res) {
-
-            $$.transactions.start("Constitution", "addAgent", agentAlias+"WithoutC", "withoutPK");
+            $$.blockchain.startTransactionAs("agent","Constitution", "addAgent", agentAlias+"WithoutC", "withoutPK");
             var agent = $$.blockchain.lookup("Agent", agentAlias);
             assert.equal(agent.publicKey, "withoutPK");
             done();
@@ -58,9 +57,9 @@ function mainTest(err, storageFolder) {
     assert.callback("PK values should be persisted", function (done) {
         $$.blockchain.start(function (err) {
             assert.isNull(err);
-            $$.transactions.start("Constitution", "addAgent", "superMan", "withoutPK");
-            $$.transactions.start("Constitution", "addAgent", agentAlias, "withoutPK");
-            $$.transactions.start("Constitution", "addAgent", agentAlias+"XXX", "withoutPK");
+            $$.blockchain.startTransactionAs("agent","Constitution", "addAgent", "superMan", "withoutPK");
+            $$.blockchain.startTransactionAs("agent","Constitution", "addAgent", agentAlias, "withoutPK");
+            $$.blockchain.startTransactionAs("agent","Constitution", "addAgent", agentAlias+"XXX", "withoutPK");
 
             restartBlockchainFromCache(function () {
                 restartBlockchainWithoutCache(done)

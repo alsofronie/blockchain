@@ -27,14 +27,14 @@ function AliasIndex(assetType, pdsHandler, worldStateCache) {
     }
 }
 
-function createLoadAssets(pdsHandler, worldStateCache){
+function createLoadAssets(blockchain, pdsHandler, worldStateCache){
     return function (assetType) {
         assetType = $$.fixSwarmName(assetType);
         const assets = [];
 
         const aliasIndex = new AliasIndex(assetType, pdsHandler, worldStateCache);
         Object.keys(aliasIndex.getAliases()).forEach(alias => {
-            assets.push($$.blockchain.lookup(assetType, alias));
+            assets.push(blockchain.lookup(assetType, alias));
         });
 
         return assets;
@@ -84,7 +84,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
         if(!handler){
             handler = pskdb.getHandler();
         }
-        return new Transaction(handler, transactionSwarm, worldStateCache, spr);
+        return new Transaction(self, handler, transactionSwarm, worldStateCache, spr);
     };
 
 
@@ -98,7 +98,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
         return newLookup(assetType, aid);
     };
 
-    this.loadAssets = createLoadAssets(pskdb.getHandler(), worldStateCache);
+    this.loadAssets = createLoadAssets(self, pskdb.getHandler(), worldStateCache);
 
     this.getSPRegistry = function(){
         return spr;
@@ -146,7 +146,7 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
     };
 }
 
-function Transaction(pdsHandler, transactionSwarm, worldStateCache, spr) {
+function Transaction(blockchain, pdsHandler, transactionSwarm, worldStateCache, spr) {
 
     let self = this;
 
@@ -174,10 +174,10 @@ function Transaction(pdsHandler, transactionSwarm, worldStateCache, spr) {
 
     this.lookup = createLookup(pdsHandler, spr, worldStateCache);
 
-    this.loadAssets = createLoadAssets(pdsHandler, worldStateCache);
+    this.loadAssets = createLoadAssets(blockchain, pdsHandler, worldStateCache);
 
     this.commit = function(){
-        $$.blockchain.commit(self);
+        blockchain.commit(self);
     };
 }
 

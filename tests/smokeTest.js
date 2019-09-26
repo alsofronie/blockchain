@@ -26,7 +26,7 @@ assert.begin("Running simple smoke test for PSK blockchain ")
 assert.callback("PK values should be persisted", function(done){
     $$.blockchain.start(function(err, res){
         assert.isNull(err);
-        $$.transactions.start("Constitution", "addAgent",agentAlias, "PublicKey");
+        $$.blockchain.startTransactionAs("agent","Constitution", "addAgent",agentAlias, "PublicKey");
         let agent = $$.blockchain.lookup("Agent", agentAlias);
         assert.equal(agent.publicKey,"PublicKey");
         done();

@@ -1,7 +1,7 @@
 
 function LatestHashTracker(){
     let hlb = "none";
-    let maxBlockNumber = -1;
+    let maxBlockNumber = 0;
     this.update = function(blockNumber,block){
         if(blockNumber > maxBlockNumber){
             hlb = block.blockDigest;
@@ -78,7 +78,8 @@ function MemoryStorage() {
     }
 
     this.loadSpecificBlock = function (blockNumber, callback) {
-        lht.update(blockNumber,blocks[blockNumber]);
+        let block =  blocks[blockNumber];
+        lht.update(blockNumber,block);
         callback(null, blocks[blockNumber]);
     }
 }

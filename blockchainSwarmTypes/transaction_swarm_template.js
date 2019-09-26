@@ -2,7 +2,9 @@ let callflowModule = require("callflow");
 let CNST = require("../moduleConstants");
 
 exports.createForObject = function(valueObject, thisObject, localId){
-	var ret = callflowModule.createStandardAPIsForSwarms(valueObject, thisObject, localId);
+	let _blockchain = undefined;
+
+	let ret = callflowModule.createStandardAPIsForSwarms(valueObject, thisObject, localId);
 	ret.swarm           = null;
 	ret.onReturn        = null;
 	ret.onResult        = null;
@@ -10,11 +12,11 @@ exports.createForObject = function(valueObject, thisObject, localId){
 	//ret.return          = null;
 	ret.home            = null;
 	ret.autoInit        = function(blockchain){
+		_blockchain = blockchain;
 		thisObject.transaction = blockchain.beginTransaction(thisObject);
 	};
 	ret.commit = function(){
-		$$.blockchain.commit(thisObject.transaction);
+		_blockchain.commit(thisObject.transaction);
 	}
-
 	return ret;
 };

@@ -89,7 +89,9 @@ function Blockchain(pskdb, consensusAlgorithm, worldStateCache, signatureProvide
 
 
     this.start = function(reportBootingFinishedCallback){
-        pskdb.initialise(reportBootingFinishedCallback);
+        pskdb.initialise(function(err,res){
+            reportBootingFinishedCallback(err,self);
+        });
     };
 
 
@@ -175,6 +177,19 @@ function Transaction(blockchain, pdsHandler, transactionSwarm, worldStateCache, 
     this.lookup = createLookup(pdsHandler, spr, worldStateCache);
 
     this.loadAssets = createLoadAssets(blockchain, pdsHandler, worldStateCache);
+
+    this.createAsset = function(swarmTypeName, ctor,...args){
+        let  asset = $$.assets.startWithContext(blockchain,swarmTypeName, ctor,...args);
+        this.add(asset);
+        return asset;
+    }
+
+    this.reviveAsset = function(assetValue){
+        let asset = $$.assets.continue(assetValue);
+        asset.__reinit(self)
+        return asset;
+    }
+
 
     this.commit = function(){
         blockchain.commit(self);

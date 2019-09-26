@@ -11,12 +11,12 @@ exports.createForObject = function(valueObject, thisObject, localId){
 	ret.return          = null;
 	ret.home            = null;
 
-
-	ret.autoInit        = function(){
+	ret.autoInit        = function(blockchain){
+		if(!blockchain) return;
 		let sp = thisObject.getMetadata(CNST.SECURITY_PARADIGM);
-		thisObject.securityParadigm = $$.blockchain.getSPRegistry().getSecurityParadigm(thisObject);
+		thisObject.securityParadigm = blockchain.getSPRegistry().getSecurityParadigm(thisObject);
 		if(sp == undefined){
-			var ctor = valueObject.myFunctions[CNST.CTOR];
+			let ctor = valueObject.myFunctions[CNST.CTOR];
 			if(ctor){
 				ctor.apply(thisObject);
 			}
@@ -31,6 +31,8 @@ exports.createForObject = function(valueObject, thisObject, localId){
 		return 	thisObject.getMetadata(CNST.SWARMTYPE);
 	}
 
-
+	ret.__reinit = function(blockchain){
+		ret.autoInit(blockchain);
+	}
 	return ret;
 };

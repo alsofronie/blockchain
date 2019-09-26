@@ -14,7 +14,7 @@ module.exports = {
     ensureEventTransaction:function(cetransaction){
         return cetransaction;
     },
-    verifyTransaction:function(t, handler, forceDeepVerification){
+    verifyTransaction:function(t, handler, forceDeepVerification, blockchain){
         let old_assets = {};
         let new_assets = {};
         let fastCheck = true;

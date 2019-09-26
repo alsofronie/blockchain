@@ -18,12 +18,12 @@ $$.asset.describe("Agent", {
 $$.transaction.describe("Constitution", {
     addAgent: function (alias, publicKey) {
         console.log("Adding Agent:", alias,  publicKey);
-        let agent = $$.asset.start("Agent", "init", alias, publicKey);
-        this.transaction.add(agent);
+        let agent = this.transaction.createAsset("Agent", "init", alias, publicKey);
+        //this.transaction.add(agent);
         this.commit();
     },
     updatePublicKey: function (alias, publicKey) {
-        let agent = $$.blockchain.lookup("Agent", alias);
+        let agent = this.transaction.lookup("Agent", alias);
         agent.publicKey = publicKey;
         this.transaction.add(agent);
         this.transaction.commit();

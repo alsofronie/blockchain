@@ -1,7 +1,7 @@
 let pskcrypto = require("pskcrypto");
 let fs = require("fs");
 
-let consUtil = require("./consUtil");
+let consUtil = require("../OBFT/transactionsUtil");
 
 let detailedDebug = false;
 
@@ -117,7 +117,7 @@ let pulseSwarm = $$.flow.describe("pulseSwarm", {
         }
         return true;
     },
-    sendLocalTransactionToConsensus: function (t) {
+    receiveTransaction: function (t) {
         this.lset[t.digest] = t;
         return t;
     },
@@ -220,7 +220,7 @@ let pulseSwarm = $$.flow.describe("pulseSwarm", {
  * @param {Object} communicationOutlet e.g. object to be used in phase `beat` of the returned "pulseSwarm" flow
  *  - it should have a property: `broadcastPulse`: function(from, pulse) {...}
  *      - {String} `from` e.g. `delegatedAgentName`
- *      - {Pulse} `pulse` (see 'consUtil.js')
+ *      - {Pulse} `pulse` (see 'transactionsUtil.js')
  * @param {InMemoryPDS} pdsAdapter e.g. require("pskdb/lib/InMemoryPDS").newPDS(null);
  * @param {Number} pulsePeriodicity e.g. 300
  * 

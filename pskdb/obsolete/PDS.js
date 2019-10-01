@@ -1,5 +1,5 @@
 
-var cutil   = require("../../signsensus/consUtil");
+var cutil   = require("../../OBFT/transactionsUtil");
 var ssutil  = require("pskcrypto");
 
 

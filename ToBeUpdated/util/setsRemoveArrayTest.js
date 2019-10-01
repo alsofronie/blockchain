@@ -1,7 +1,7 @@
 
 
 
-var cutil = require("../../../signsensus/lib/consUtil.js");
+var cutil = require("../../../signsensus/lib/transactionsUtil.js");
 
 var assert = require('double-check').assert;
 

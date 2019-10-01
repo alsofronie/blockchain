@@ -1,5 +1,5 @@
 let CNST = require("../moduleConstants");
-let  cutil   = require("../signsensus/consUtil");
+let  cutil   = require("../OBFT/transactionsUtil");
 let bm = require("../index");
 
 //var ssutil  = require("pskcrypto");

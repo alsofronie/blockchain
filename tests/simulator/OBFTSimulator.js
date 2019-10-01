@@ -44,7 +44,6 @@ if (cluster.isMaster) {
 
         bm.createBlockchain(worldStateCache, historyStorage, consensusAlgorithm, signatureProvider, false, false);
 
-
         $$.blockchain.start(function (err) {
             $$.transactions.start("Constitution", "addAgent", "root", "rootPK");
             network.listen(function(err, pulse){

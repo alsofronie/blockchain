@@ -1,6 +1,6 @@
 require('../../../psknode/bundles/pskruntime');
 //require('../../../../builds/devel/psknode');
-let dc = require('double-check');
+let dc = require('../../double-check');
 var assert = dc.assert;
 var bm = require('../index');
 require('./testUtil/simplestConstitution');

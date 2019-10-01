@@ -39,11 +39,33 @@ function SignSensusAlgoritm(nodeName, networkImplementation, pulsePeriodicity, v
     }
 }
 
+
+
+function OBFTAlgoritm(nodeName, networkImplementation, pulsePeriodicity, latency, votingBox){
+    let pskdb = null;
+    let algorithm = null;
+    this.setPSKDB = function(_pskdb){
+        pskdb = _pskdb;
+        algorithm = require("../../OBFT/OBFTImplementation").createConsensusManager(nodeName, networkImplementation, pskdb, pulsePeriodicity, latency, votingBox);
+        this.recordPulse =  algorithm.recordPulse;
+        console.log("Setting pskdb for algorithm")
+    }
+
+    this.commit = function(transaction){
+        algorithm.sendLocalTransactionToConsensus(transaction);
+    }
+
+    this.getCurrentPulse = function(){
+        return algorithm.currentPulse;
+    }
+}
+
 module.exports = {
     createAlgorithm:function(name,...args){
         switch(name){
             case "direct": return new DirectCommitAlgorithm(...args);
             case "SignSensus": return new  SignSensusAlgoritm(...args);
+            case "OBFT": return new  OBFTAlgoritm(...args);
             default:
                 $$.exception("Unknown consensus algortihm  " + name);
         }

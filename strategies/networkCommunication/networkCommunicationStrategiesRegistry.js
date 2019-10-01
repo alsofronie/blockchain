@@ -1,8 +1,14 @@
 const mc = require("../../moduleConstants");
+let pulseUtil = require("../../OBFT/PulseUtil");
 
 
 function IPCNetworkSimulator(){
     this.broadcastPulse = function(pulse){
+        process.send(pulse);
+    }
+
+    this.newPulse = function(){
+        let p = pulseUtil.createPulse()
         process.send(pulse);
     }
 

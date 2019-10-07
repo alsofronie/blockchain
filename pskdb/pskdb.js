@@ -4,6 +4,55 @@ let bm = require("../index");
 
 //var ssutil  = require("pskcrypto");
 
+function _versionedKeyValueDB(worldStateCache) {
+  let cset = {}
+
+  this.dump = worldStateCache.dump
+
+  this.readKey = function (key, mustExist) {
+    if (cset.hasOwnProperty(key)) {
+      return cset[key].value
+    }
+    if (mustExist) {
+      cset[key] = {
+        version: 0,
+        value: undefined
+      }
+    }
+    return undefined
+  }
+
+  this.writeKey = function (key, value, versionOverride) {
+    if (cset.hasOwnProperty(key)) {
+      cset[key].version = (versionOverride !== undefined ? versionOverride : cset[key].version + 1)
+      cset[key].value = value
+    } else {
+      cset[key] = {
+        version: versionOverride || 0,
+        value: value
+      }
+    }
+    return cset[key].version
+  }
+
+  this.version = function(key) {
+    return cset.hasOwnProperty(key) ? cset[key].version : undefined
+  }
+
+  this.getInternalValues = function(currentPulse) {
+    const { versions, values } = Object.keys(cset).reduce((acc, key) => {
+      acc.versions[key] = cset[key].version
+      acc.values[key] = cset[key].value
+    }, { versions: {}, values: {} })
+    
+    return {
+        cset: values,
+        versions,
+        currentPulse
+    }
+  }
+}
+
 
 function KeyValueDBWithVersions(worldStateCache){ //main storage
     let cset        = {};  // contains all keys
